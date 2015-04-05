@@ -1,7 +1,7 @@
 # PHPAppFramework
 ###### A thin but functional PHP application framework
 
-** NOTE: UNSTABLE CODE - UNDER ACTIVE DEVELOPMENT **
+**NOTE: UNSTABLE CODE - UNDER ACTIVE DEVELOPMENT**
 
 An extremely thin base framework for developing PHP applications. Features include:
 
