@@ -4,7 +4,10 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/interceptor.php" ) ;
 
 class RequestTypeInterceptor extends Interceptor {
 
+	private $logger ;
+
 	function __construct() {
+		$this->logger = Logger::getLogger( __CLASS__ ) ;
         array_push( $GLOBALS[ 'interceptor_chain' ], $this ) ;
 	}
 
@@ -13,7 +16,6 @@ class RequestTypeInterceptor extends Interceptor {
 	}
 
 	function intercept() {
-		global $logger ;
 
 		$requestType = "WEB" ;
 		$accept = $_SERVER[ 'HTTP_ACCEPT' ] ;
@@ -21,7 +23,7 @@ class RequestTypeInterceptor extends Interceptor {
 			$requestType = "API" ;
 		}
 
-		$logger->debug( "\tRequest is of type $requestType." ) ;
+		$this->logger->debug( "\tRequest is of type $requestType." ) ;
 		ExecutionContext::setRequestType( $requestType ) ;
 	}	
 }

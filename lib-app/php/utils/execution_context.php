@@ -28,7 +28,7 @@ class ExecutionContext {
 	}
 
 	static function getUserPreference( $key, $defaultValue = NULL ) {
-		return self::$currentUser->preferences->get( $key, $defaultValue ) ;
+		return self::$currentUser->getPreference( $key, $defaultValue ) ;
 	}
 
 	static function &getCurrentUser() {

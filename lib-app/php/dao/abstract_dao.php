@@ -2,9 +2,15 @@
 
 abstract class AbstractDAO {
 
+	private $logger ;
+
+	function __construct() {
+		$this->logger = Logger::getLogger( __CLASS__ ) ;
+	}
+
 	function processDatabaseError( $query ) {
-	    global $logger, $dbConn ;
-	    $logger->error( "DB Error - Query = " . $query ) ;
+	    global $dbConn ;
+	    $this->logger->error( "DB Error - Query = " . $query ) ;
 	    throw new Exception( "Database Error - " . $dbConn->error ) ;
 	}
 
@@ -12,16 +18,15 @@ abstract class AbstractDAO {
 										  $sqlType,
 		                                  $minAffectedRowsToCheck=1,
 		                                  $successMessage="Execution successful." ) {
+	    global $dbConn ;
 
-	    global $logger, $dbConn ;
-
-	    $logger->debug( "Firing $sqlType query = $sql" ) ;
+	    $this->logger->debug( "Firing $sqlType query = $sql" ) ;
 	    if( $result = $dbConn->query( $sql ) ) {
 	        if( $dbConn->affected_rows >= $minAffectedRowsToCheck ) {
-	            $logger->debug( "\t" . $successMessage . " Num affected rows = " . $dbConn->affected_rows ) ;
+	            $this->logger->debug( "\t" . $successMessage . " Num affected rows = " . $dbConn->affected_rows ) ;
 	        }
 	        else {
-	        	$logger->debug( "WARNING:: " . $dbConn->affected_rows . 
+	        	$this->logger->debug( "WARNING:: " . $dbConn->affected_rows . 
 	        		            " rows affected. Less than expected." ) ;
 	        }
         }
@@ -52,13 +57,13 @@ abstract class AbstractDAO {
 		                           $minSelectedRecordsToCheck=1,
 		                           $successMessage="Select successful." ) {
 
-	    global $logger, $dbConn ;
+	    global $dbConn ;
 	    $result ;
 
-	    $logger->debug( "Firing select query = $sql" ) ;
+	    $this->logger->debug( "Firing select query = $sql" ) ;
 	    if( $result = $dbConn->query( $sql ) ) {
 	    	if( $result->num_rows < $minSelectedRecordsToCheck ) {
-	        	$logger->debug( "WARNING:: " . $dbConn->num_rows . 
+	        	$this->logger->debug( "WARNING:: " . $dbConn->num_rows . 
 	        		            " rows selected. Less than expected." ) ;
 	    	}
         }
@@ -71,14 +76,14 @@ abstract class AbstractDAO {
 
 	protected function selectSingleValue( $query, $defaultValue=NULL ) {
 
-	    global $logger, $dbConn ;
+	    global $dbConn ;
 
 	    $singleValue = $defaultValue ;
 	    $result = $this->executeSelect( $query ) ;
 
     	if( $result->num_rows != 0 ) {
     		$singleValue = $result->fetch_array()[0] ;
-    		$logger->debug( "\tValue from database is " . $singleValue ) ;
+    		$this->logger->debug( "\tValue from database is " . $singleValue ) ;
     	}
 	    return $singleValue ;
 	}

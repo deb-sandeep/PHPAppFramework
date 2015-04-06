@@ -40,14 +40,14 @@ require_once( $_SERVER['DOCUMENT_ROOT']."/lib-app/php/page_preprocessor.php" ) ;
 	</script>
 </head>
 <body>
-	Hello there! <?php echo ExecutionContext::getCurrentUser()->userName ?>
+	Hello there! <?php echo ExecutionContext::getCurrentUser()->getUserName() ?>
 	<p>
 	<a href="<?php echo LOGOUT_SERVICE ?>">Logout</a><p>
 	<ul>
 	<?php
 	echo ExecutionContext::getUserPreference( "default.font.size" ) ;
 	echo "<p>" ;
-	foreach ( ExecutionContext::getCurrentUser()->preferences->getPreferences() as $key => $value) {
+	foreach ( ExecutionContext::getCurrentUser()->getPreferences() as $key => $value) {
 		echo "<li>$key = $value</li>" ;
 	}
 	?>

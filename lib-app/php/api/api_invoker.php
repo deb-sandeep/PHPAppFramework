@@ -10,15 +10,16 @@ class APIInvoker {
 	const PROCESSING_RESULT_ERROR   = "ERROR" ;
 	const PROCESSING_RESULT_SUCCESS = "SUCCESS" ;
 
+	private $logger ;
+
 	private $apiName = NULL ;
 	private $requestPayload = NULL ;
 
 	function __construct() {
+		$this->logger = Logger::getLogger( __CLASS__ ) ;
 	}
 
 	public function handleRequest() {
-
-		global $logger ;
 
 		try {
 			$this->validateRequest() ;
@@ -40,15 +41,14 @@ class APIInvoker {
 				                 $responsePayload ) ;
 		}
 		catch( Exception $e ) {
-			$logger->error( "Exception while handling API request. $e" ) ;
+			$this->logger->error( "Exception while handling API request. $e" ) ;
 			self::writeErrorResponse( $e ) ;
 		}
 	}
 
 	private function validateRequest() {
 
-		global $logger ;
-		$logger->debug( "Validating API request" ) ;
+		$this->logger->debug( "Validating API request" ) ;
 
 		$serializedRequest = HTTPUtils::getRequestParameterValue(
 								                self::SERIALIZED_REQUEST_KEY ) ;
@@ -57,7 +57,7 @@ class APIInvoker {
 				                 " parameter not found in API request" ) ;
 		}
 		else {
-			$logger->debug( "API serialized request = $serializedRequest" ) ;
+			$this->logger->debug( "API serialized request = $serializedRequest" ) ;
 		}
 
 		$request = json_decode( $serializedRequest ) ;
@@ -71,29 +71,29 @@ class APIInvoker {
 		}
 		else {
 			$this->apiName = $request->{ 'apiName' } ;
-			$logger->debug( "API to invoke = $this->apiName" ) ;
+			$this->logger->debug( "API to invoke = $this->apiName" ) ;
 		}
 
 		if( isset( $request->{ 'payload' } ) ) {
 			$this->requestPayload = $request->{ 'payload' } ;
 		}
 		else {
-			$logger->warn( "No payload found in API request." ) ;
+			$this->logger->warn( "No payload found in API request." ) ;
 		}
 	}
 
 	private function loadAPI() {
 
-		global $logger, $API_INCLUDE_FOLDER_LIST ;
+		global $API_INCLUDE_FOLDER_LIST ;
 
 		$apiDefinitionFile = NULL ;
 
 		foreach( $API_INCLUDE_FOLDER_LIST as $apiIncludeFolder ) {
-			$logger->debug( "Checking API include folder - $apiIncludeFolder" ) ;
+			$this->logger->debug( "Checking API include folder - $apiIncludeFolder" ) ;
 			
 			$apiDefinitionFile = $apiIncludeFolder . $this->apiName . ".php" ;
 			if( file_exists( $apiDefinitionFile ) ) {
-				$logger->debug( "API found" ) ;
+				$this->logger->debug( "API found" ) ;
 				break ;
 			}
 			else {
@@ -110,20 +110,15 @@ class APIInvoker {
 		}
 	}
 
-	private static function writeSuccessResponse( $output ) {
+	public function writeErrorResponse( $message ) {
+		$this->writeResponse( self::PROCESSING_RESULT_ERROR, $message ) ;
 	}
 
-	public static function writeErrorResponse( $message ) {
-		self::writeResponse( self::PROCESSING_RESULT_ERROR, $message ) ;
-	}
+	private function writeResponse( $status, $message, $payload=NULL ) {
 
-	private static function writeResponse( $status, $message, $payload=NULL ) {
-
-		global $logger ;
-
-	    $logger->debug( "Sending API response" ) ;
-	    $logger->debug( "\tStatus = $status" ) ;
-	    $logger->debug( "\tMessage = $message" ) ;
+	    $this->logger->debug( "Sending API response" ) ;
+	    $this->logger->debug( "\tStatus = $status" ) ;
+	    $this->logger->debug( "\tMessage = $message" ) ;
 
 		$response = array() ;
 		$processingStatus   = array() ;
@@ -135,7 +130,7 @@ class APIInvoker {
 		$response[ "payload" ] = $payload ;
 
 	    $outputString = json_encode( $response, JSON_NUMERIC_CHECK ) ;
-	    $logger->debug( "\tResponse string = $outputString" ) ;
+	    $this->logger->debug( "\tResponse string = $outputString" ) ;
 	    echo $outputString ;
 
 	    die() ;

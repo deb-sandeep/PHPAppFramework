@@ -69,15 +69,15 @@ interface AuthenticationService extends Service {
 
 class AuthenticationServiceImpl implements AuthenticationService {
 
-	var $userDAO ;
+	private $logger ;
+	private $userDAO ;
 
 	function __construct() {
+		$this->logger = Logger::getLogger( __CLASS__ ) ;
 		$this->userDAO = new UserDAOImpl() ;
 	}
 
 	public function validateCredentials( $userName, $password ) {
-
-		global $logger ;
 
 		if( !isset( $password ) || empty( $password ) || $password == NULL ) {
 			throw new AuthenticationException( AuthenticationException::PASSWORD_INVALID ) ;
@@ -90,19 +90,17 @@ class AuthenticationServiceImpl implements AuthenticationService {
 		else if( $storedPassword != $password ) {
 			throw new AuthenticationException( AuthenticationException::PASSWORD_INVALID ) ;
 		}
-		$logger->debug( "Password for user '$userName' is valid." ) ;
+		$this->logger->debug( "Password for user '$userName' is valid." ) ;
 	}
 
 	public function getNewAuthenticationTokenForUser( $userName, $tokenType ) {
-
-		global $logger ;
 
 		$preHashString = $userName . time() . rand() ;
 		$authenticationToken = md5( $preHashString ) ;
 
 		$this->userDAO->saveNewAuthenticationToken( $userName, $authenticationToken, $tokenType ) ;
 
-		$logger->debug( "New authentication token '$authenticationToken' generated for user '$userName'" ) ;
+		$this->logger->debug( "New authentication token '$authenticationToken' generated for user '$userName'" ) ;
 		return $authenticationToken ;
 	}
 
@@ -112,15 +110,13 @@ class AuthenticationServiceImpl implements AuthenticationService {
 
 	public function validateAuthenticationToken( $authToken ) {
 
-		global $logger ;
-
 		$this->userDAO->removeObsoleteTokens() ;
 		$userName = $this->userDAO->getUserNameForToken( $authToken ) ;
 		if( $userName == NULL ) {
 			throw new AuthenticationException( AuthenticationException::TOKEN_INVALID )	;
 		}
 		
-		$logger->debug( "Token '$authToken' is registered for user '$userName'" ) ;
+		$this->logger->debug( "Token '$authToken' is registered for user '$userName'" ) ;
 		return $userName ;
 	}
 

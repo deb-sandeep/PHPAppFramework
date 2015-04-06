@@ -25,13 +25,16 @@ class WebAuthenticationInterceptor extends Interceptor {
 	const REQ_TYPE_LOGIN_PAGE_LOAD = "REQ_TYPE_LOGIN_PAGE_LOAD" ;
 	const REQ_TYPE_LOGOUT          = "REQ_TYPE_LOGOUT" ;
 
+	private $logger ;
+
 	private $authenticationService ;
 
 	private $userName ;
 	private $authToken ;
 
 	function __construct() {
-        array_push( $GLOBALS[ 'interceptor_chain' ], $this ) ;
+        $this->logger = Logger::getLogger( __CLASS__ ) ;
+		array_push( $GLOBALS[ 'interceptor_chain' ], $this ) ;
         $this->authenticationService = new AuthenticationServiceImpl() ;
 	}
 
@@ -41,36 +44,34 @@ class WebAuthenticationInterceptor extends Interceptor {
 
 	function intercept() {
 
-		global $db, $logger ;
-
 		$requestType = $this->getRequestType() ;
-		$logger->debug( "Request type is " . $requestType ) ;
+		$this->logger->debug( "Request type is " . $requestType ) ;
 
 		switch( $requestType ) {
 
 			case self::REQ_TYPE_LOGIN_PAGE_LOAD:
-				$logger->debug( "Interception action - Pass throught" ) ;
+				$this->logger->debug( "Interception action - Pass throught" ) ;
 				break ;
 
 			case self::REQ_TYPE_UNAUTHENTICATED:
-				$logger->debug( "Interception action - Redirecting to login page" ) ;
+				$this->logger->debug( "Interception action - Redirecting to login page" ) ;
 				$this->processUnauthenticatedRequest() ;
 				break ;
 
 			case self::REQ_TYPE_PWD_AUTH:
-				$logger->debug( "Interception action - Validating credentials" ) ;
+				$this->logger->debug( "Interception action - Validating credentials" ) ;
 				$this->processLoginPasswordAuthentication() ;
 				$this->updateLastAccessTime() ;
 				break ;
 
 			case self::REQ_TYPE_TOKEN_AUTH:
-				$logger->debug( "Interception action - Validating token" ) ;
+				$this->logger->debug( "Interception action - Validating token" ) ;
 				$this->processTokenAuthentication() ;
 				$this->updateLastAccessTime() ;
 				break ;
 
 			case self::REQ_TYPE_LOGOUT:
-				$logger->debug( "Interception action - processing logout" ) ;
+				$this->logger->debug( "Interception action - processing logout" ) ;
 				$this->processLogout() ;
 				break ;
 		}
@@ -78,9 +79,7 @@ class WebAuthenticationInterceptor extends Interceptor {
 
 	private function updateLastAccessTime() {
 
-		global $logger ;
-
-		$logger->debug( "Setting last update time." ) ;
+		$this->logger->debug( "Setting last update time." ) ;
 		$this->authenticationService->updateLastAccessTime( $this->userName,
 			                                                $this->authToken ) ;
 	}
@@ -116,8 +115,6 @@ class WebAuthenticationInterceptor extends Interceptor {
 
 	private function processLoginPasswordAuthentication() {
 
-		global $logger ;
-
 		$this->userName = HTTPUtils::getRequestParameterValue( self::REQ_PARAM_LOGIN ) ;
 		$password = HTTPUtils::getRequestParameterValue( self::REQ_PARAM_PASSWORD ) ;
 
@@ -130,15 +127,13 @@ class WebAuthenticationInterceptor extends Interceptor {
 		}
 		catch( AuthenticationException $e ) {
 
-			$logger->error( "Invalid login/password. Message = " . $e ) ;
+			$this->logger->error( "Invalid login/password. Message = " . $e ) ;
 			$this->setErrorMessageInSession( $e ) ;
 			HTTPUtils::redirectTo( LOGIN_PAGE_PATH ) ;
 		}
 	}
 
 	private function setAuthenticationTokenCookie() {
-
-		global $logger ;
 
 		$lifeInDays = 0 ;
 		$tokenType  = "SESSION" ;
@@ -151,26 +146,24 @@ class WebAuthenticationInterceptor extends Interceptor {
 		                        ->getNewAuthenticationTokenForUser
 		                          ( $this->userName, $tokenType ) ;
 
-		$logger->debug( "Setting authentication token cookie. Cookie type = $tokenType" ) ;
+		$this->logger->debug( "Setting authentication token cookie. Cookie type = $tokenType" ) ;
 		HTTPUtils::setCookie( AuthenticationInterceptor::COOKIE_PARAM_AUTH_TOKEN, 
 			                  $this->authToken, $lifeInDays ) ;
 	}
 
 	private function processTokenAuthentication() {
 
-		global $logger ;
-
 		try {
 			$this->authToken = HTTPUtils::getCookieValue( 
 				          AuthenticationInterceptor::COOKIE_PARAM_AUTH_TOKEN ) ;
-			$logger->debug( "Authentication token received = $this->authToken" ) ;
+			$this->logger->debug( "Authentication token received = $this->authToken" ) ;
 			$this->userName = $this->authenticationService
 			                       ->validateAuthenticationToken( $this->authToken ) ;
 			ExecutionContext::setCurrentUser( $this->userName ) ;
 		}
 		catch( AuthenticationException $e ) {
 
-			$logger->error( "Invalid token. Message = " . $e ) ;
+			$this->logger->error( "Invalid token. Message = " . $e ) ;
 			$this->setErrorMessageInSession( $e ) ;
 		    $this->saveRequestedPageDetailsInSession() ;
 		    $this->deleteAuthenticationTokenCookie() ;
@@ -180,21 +173,19 @@ class WebAuthenticationInterceptor extends Interceptor {
 
 	private function processLogout() {
 
-		global $logger ;
-
 		$this->authToken = HTTPUtils::getCookieValue( 
 						  AuthenticationInterceptor::COOKIE_PARAM_AUTH_TOKEN ) ;
 		if( $this->authToken != NULL ) {
-			$logger->debug( "Deleting authentication token cookie." ) ;
+			$this->logger->debug( "Deleting authentication token cookie." ) ;
 			$this->deleteAuthenticationTokenCookie() ;
 			$this->authenticationService
 			     ->deleteAuthenticationToken( $this->authToken ) ;
 		}
 
-		$logger->debug( "Invalidating session." ) ;
+		$this->logger->debug( "Invalidating session." ) ;
 		HTTPUtils::invalidateSession() ;
 		
-		$logger->debug( "Redirecting user to post logout page." ) ;
+		$this->logger->debug( "Redirecting user to post logout page." ) ;
 		HTTPUtils::redirectTo( POST_LOGOUT_PAGE_PATH ) ;
 	}
 
@@ -224,12 +215,14 @@ class WebAuthenticationInterceptor extends Interceptor {
 
 class APIAuthenticationInterceptor extends AuthenticationInterceptor {
 
+	private $logger ;
 	private $authenticationService ;
 
 	private $authToken ;
 	private $userName ;
 
 	function __construct() {
+		$this->logger = Logger::getLogger( __CLASS__ ) ;
         array_push( $GLOBALS[ 'interceptor_chain' ], $this ) ;
         $this->authenticationService = new AuthenticationServiceImpl() ;
 	}
@@ -240,11 +233,9 @@ class APIAuthenticationInterceptor extends AuthenticationInterceptor {
 
 	function intercept() {
 
-		global $db, $logger ;
-
 		try {
 			$this->authToken = $this->validateAuthTokenCookiePresent() ;
-			$logger->debug( "Authentication token received = $this->authToken" ) ;
+			$this->logger->debug( "Authentication token received = $this->authToken" ) ;
 
 			$this->userName = $this->authenticationService
 			                       ->validateAuthenticationToken( $this->authToken ) ;
@@ -253,12 +244,12 @@ class APIAuthenticationInterceptor extends AuthenticationInterceptor {
 			ExecutionContext::setCurrentUser( $this->userName ) ;
 		}
 		catch( AuthenticationException $e ) {
-			$logger->error( "Invalid token. Message = " . $e ) ;
+			$this->logger->error( "Invalid token. Message = " . $e ) ;
 			APIInvoker::writeErrorResponse( "Authentication failed. Message $e" ) ;
 		}
 
 		if( PHP_SELF != API_GATEWAY_SERVICE_PATH ) {
-			$logger->error( "API request is not being sent to API gateway" ) ;
+			$this->logger->error( "API request is not being sent to API gateway" ) ;
 			APIInvoker::writeErrorResponse( "API request is not sent to the API gateway." ) ;
 		}
 	}
@@ -272,9 +263,7 @@ class APIAuthenticationInterceptor extends AuthenticationInterceptor {
 
 	private function updateLastAccessTime() {
 
-		global $logger ;
-
-		$logger->debug( "Setting last update time." ) ;
+		$this->logger->debug( "Setting last update time." ) ;
 		$this->authenticationService->updateLastAccessTime( $this->userName,
 			                                                $this->authToken ) ;
 	}

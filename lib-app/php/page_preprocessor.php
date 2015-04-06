@@ -3,8 +3,12 @@
 require_once( $_SERVER['DOCUMENT_ROOT'] . "/lib-app/php/configs/constants.php" ) ;
 require_once( $_SERVER['DOCUMENT_ROOT'] . "/lib-app/php/configs/config.php" ) ;
 
-// Global variables
-$logger ;
+// Initialize logging
+require_once( 'log4php/Logger.php' ) ;
+Logger::configure( DOCUMENT_ROOT . "/lib-app/php/configs/log4php-config.xml" ) ;
+$log = Logger::getLogger( PHP_SELF ) ;
+$log->debug( "=============================================================" ) ;
+
 $dbConn ;
 
 $initializer_chain = array() ;
@@ -13,7 +17,6 @@ $interceptor_chain = array() ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/utils/execution_context.php" ) ;
 
 // Load the initializers
-require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/" . "log_initializer.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/" . "session_initializer.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/" . "db_initializer.php" ) ;
 
@@ -34,33 +37,31 @@ catch( Exception $e ) {
 		die() ;
 	}
 	else {
-		APIInvoker::writeErrorResponse( "API exception. Message = $e" ) ;
+		$invoker = new APIInvoker() ;
+		$invoker->writeErrorResponse( "API exception. Message = $e" ) ;
 	}
 }
 
 // =================================================================================================
 function runInitializers() {
-	global $initializer_chain, $logger ;
+	global $initializer_chain, $log ;
 
 	try {
 		foreach( $initializer_chain as $initializer ) {
-			if( isset( $logger ) ) {
-				$logger->debug( "Running initializer :: " . 
-					            get_class( $initializer ) ) ;
-			}
+			$log->debug( "Running initializer :: " . get_class( $initializer ) ) ;
 			$initializer->initialize() ;
 		}
 	}
 	catch( Exception $e ) {
-		$logger->error( "Exception during initialization. " .
-			            "Message = " . $e->getMessage() ) ;
+		$log->error( "Exception during initialization. " .
+			         "Message = " . $e->getMessage() ) ;
 		throw $e ;
 	}
-	$logger->debug( "System initialized successfully" ) ;
+	$log->debug( "System initialized successfully" ) ;
 }
 
 function runInterceptors() {
-	global $interceptor_chain, $logger ;
+	global $interceptor_chain, $log ;
 
 	try {
 		foreach ( $interceptor_chain as $interceptor ) {
@@ -68,20 +69,19 @@ function runInterceptors() {
 			$interceptorName = get_class( $interceptor ) ;
 
 			if( $interceptor->canInterceptRequest() ) {
-				$logger->debug( "Running interceptor :: $interceptorName" ) ;
+				$log->debug( "Running interceptor :: $interceptorName" ) ;
 				$interceptor->intercept() ;
 			}
 			else {
-				$logger->debug( "Interceptor $interceptorName chose not to intercept" ) ;
+				$log->debug( "Interceptor $interceptorName chose not to intercept" ) ;
 			}
 		}
 	}
 	catch( Exception $e ) {
-		$logger->error( "Exception during interception. " . 
-			            "Message = " . $e->getMessage() ) ;
+		$log->error( "Interception exception. Message = " . $e->getMessage() ) ;
 		throw $e ;
 	}
-	$logger->debug( "Request interception successfully completed." ) ;
+	$log->debug( "Request interception successfully completed." ) ;
 }
 
 ?>

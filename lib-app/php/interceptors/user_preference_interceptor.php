@@ -7,26 +7,27 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/interceptor.php" ) ;
 
 class UserPreferenceInterceptor extends Interceptor {
 
+	private $logger ;
+
 	function __construct() {
+		$this->logger = Logger::getLogger( __CLASS__ ) ;
         array_push( $GLOBALS[ 'interceptor_chain' ], $this ) ;
 	}
 
 	function intercept() {
 
-		global $logger ;
-		
 		$userDAO = new UserDAOImpl() ;
-		$userPrefs = ExecutionContext::getCurrentUser()->preferences ;
+		$user = ExecutionContext::getCurrentUser() ;
 
-		$result = $userDAO->loadUserPreferences( ExecutionContext::getCurrentUser()->userName ) ;
+		$result = $userDAO->loadUserPreferences( $user->getUserName() ) ;
 		if( $result->num_rows > 0 ) {
 		    while( $row = $result->fetch_array() ) {
 
 		    	$key   = $row[ 'key' ] ;
 		    	$value = $row[ 'value' ] ;
 
-		    	$logger->debug( "Setting preference $key = $value" ) ;
-		    	$userPrefs->setPreference( $key, $value ) ;
+		    	$this->logger->debug( "Setting preference $key = $value" ) ;
+		    	$user->setPreference( $key, $value ) ;
 		    }
 		}
 	}	
