@@ -12,6 +12,7 @@ An extremely thin base framework for developing PHP applications. Features inclu
   * API key support for API calls (planned)
 * User management
 * User preference management
+* Authorization at arbitrary granularity level
 * Dynamically resolved API handlers
 * ...
 * ...
