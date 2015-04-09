@@ -18,18 +18,19 @@ class UserPreferenceInterceptor extends Interceptor {
 
 		$userDAO = new UserDAOImpl() ;
 		$user = ExecutionContext::getCurrentUser() ;
+		$userName = $user->getUserName() ;
 
-		$result = $userDAO->loadUserPreferences( $user->getUserName() ) ;
-		if( $result->num_rows > 0 ) {
-		    while( $row = $result->fetch_array() ) {
-
-		    	$key   = $row[ 'key' ] ;
-		    	$value = $row[ 'value' ] ;
-
-		    	$this->logger->debug( "Setting preference $key = $value" ) ;
-		    	$user->setPreference( $key, $value ) ;
-		    }
+		$map = $userDAO->loadUserPreferences( $userName ) ;
+		foreach ($map as $key => $value) {
+	    	$this->logger->debug( "Setting preference $key = $value" ) ;
+	    	$user->setPreference( $key, $value ) ;
 		}
+
+		$roles = $userDAO->getUserRoles( $userName )	;
+		$entitlements = $userDAO->getUserEntitlements( $userName, $roles ) ;
+
+		$user->addRoles( $roles ) ;
+		$user->addEntitlements( $entitlements ) ;
 	}	
 }
 

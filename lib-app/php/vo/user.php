@@ -11,10 +11,10 @@ class User {
 
 	private $logger ;
 
-	private $userName = NULL ;
-	private $preferences = NULL ;
-	private $rights = NULL ;
-	private $roles = NULL ;
+	private $userName     = NULL ;
+	private $preferences  = NULL ;
+	private $entitlements = NULL ;
+	private $roles        = NULL ;
 
 	function __construct( $name ) {
 
@@ -22,7 +22,7 @@ class User {
 		
 		$this->userName    = $name ;
 		$this->preferences = array() ;
-		$this->entitlements      = array() ;
+		$this->entitlements= array() ;
 		$this->roles       = array() ;
 	}
 
@@ -72,14 +72,46 @@ class User {
 		return $this->roles ;
 	}
 
+	function getAllEntitlementsAsStringArray() {
+
+		$allEntitlements = array() ;
+		$opTypeList = array( A12NUtils::OP_INCLUDE, A12NUtils::OP_EXCLUDE, 
+			                 A12NUtils::OP_INCLUDE_OVERRIDE, 
+			                 A12NUtils::OP_EXCLUDE_OVERRIDE ) ;
+
+		foreach( $this->entitlements as $entType => $entContainer ) {
+			foreach( $opTypeList as $opType ) {
+				$container = $entContainer[ $opType ] ;
+				foreach( $container as $entitlement ) {
+					array_push( $allEntitlements,
+						        $opType . ":" . $entType . ":" . $entitlement ) ;
+				}
+			}
+		}
+		return $allEntitlements ;
+	}
+
 	// --------------------- Setters -------------------------------------------
 	function setPreference( $key, $value ) {
 		$this->preferences[ $key ] = $value ;
 	}
 
+	function addRoles( $rolesList ) {
+		foreach( $rolesList as $role ) {
+			$this->addRole( $role ) ;
+		}
+	}
+
 	function addRole( $roleName ) {
 		if( !in_array( $roleName, $this->roles ) ) {
 			array_push( $this->roles, $roleName ) ;
+		}
+	}
+
+	function addEntitlements( $entitlementList ) {
+
+		foreach( $entitlementList as $entitlement ) {
+			$this->addEntitlement( $entitlement ) ;
 		}
 	}
 

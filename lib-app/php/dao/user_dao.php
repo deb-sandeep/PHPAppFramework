@@ -27,7 +27,7 @@ interface UserDAO {
 	// --------------- USER ENTITLEMENT FUNCTIONS ------------------------------
 	function getUserRoles( $userName ) ;
 
-	function getUserEntitlements( $userName ) ;
+	function getUserEntitlements( $userName, $roles=NULL ) ;
 }
 
 class UserDAOImpl extends AbstractDAO implements UserDAO {
@@ -160,8 +160,36 @@ class UserDAOImpl extends AbstractDAO implements UserDAO {
 		}
 	}
 
-	function getUserEntitlements( $userName ) {
+	function getUserEntitlements( $userName, $roles=NULL ) {
 
+		if( $roles == NULL ) {
+			$roles = $this->getUserRoles( $userName ) ;
+		}
+
+		$query = 
+		"select value " .
+		"from user.entitlement " .
+		"where " .
+			"entity_type='USER' and " .
+			"value_type='PATTERN' and " .
+			"entity_name = '$userName' " .
+		"union " .
+		"select value " .
+		"from user.entitlement " .
+		"where " .
+			"entity_type='ROLE' and " .
+			"value_type='PATTERN' and " .
+			"entity_name in ( '" . implode( "','", $roles ) . "')" .
+		"union " .
+		"select a.pattern " .
+		"from user.entitlement_pattern_alias a, user.entitlement e " .
+		"where " .
+			"a.alias = e.value and " .
+			"e.value_type = 'ALIAS' and " .
+			"e.entity_name in ( '$userName', '" . implode( "','", $roles ) . "' ) " ;
+
+		$entitlements = parent::getResultAsArray( $query ) ;
+		return array_unique( $entitlements ) ;
 	}
 }
 

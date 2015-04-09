@@ -1,6 +1,7 @@
 <?php
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/api/api.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/utils/execution_context.php" ) ;
 
 class TestAPI extends API {
 
@@ -8,7 +9,7 @@ class TestAPI extends API {
 
 	public function getResponse() {
 		return array(
-			"message" => "Hello World!"
+			"message" => "Hello " . ExecutionContext::getCurrentUser()->getUserName() 
 		) ;
 	}
 }

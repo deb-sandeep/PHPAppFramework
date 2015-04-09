@@ -45,10 +45,15 @@ require_once( $_SERVER['DOCUMENT_ROOT']."/lib-app/php/page_preprocessor.php" ) ;
 	<a href="<?php echo LOGOUT_SERVICE ?>">Logout</a><p>
 	<ul>
 	<?php
-	echo ExecutionContext::getUserPreference( "default.font.size" ) ;
+	echo "<h3>User preferences</h3>" ;
 	echo "<p>" ;
 	foreach ( ExecutionContext::getCurrentUser()->getPreferences() as $key => $value) {
 		echo "<li>$key = $value</li>" ;
+	}
+	echo "<p>" ;
+	echo "<h3>User entitlements</h3>" ;
+	foreach ( ExecutionContext::getCurrentUser()->getAllEntitlementsAsStringArray() as $entitlement) {
+		echo "<li>$entitlement</li>" ;
 	}
 	?>
 	</ul>

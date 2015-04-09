@@ -23,7 +23,7 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/" . "db_initializer.php
 // Load the interceptors
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "request_type_interceptor.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "authentication_interceptor.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "user_preference_interceptor.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "user_context_interceptor.php" ) ;
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/api/api_invoker.php" ) ;
 
