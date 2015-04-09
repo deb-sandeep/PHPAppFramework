@@ -1,0 +1,3 @@
+RewriteEngine On  
+
+RewriteRule ^api.php/(.*) api.php?path=$1 [L]
