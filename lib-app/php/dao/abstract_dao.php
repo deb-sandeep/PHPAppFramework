@@ -63,7 +63,7 @@ abstract class AbstractDAO {
 	    $this->logger->debug( "Firing select query = $sql" ) ;
 	    if( $result = $dbConn->query( $sql ) ) {
 	    	if( $result->num_rows < $minSelectedRecordsToCheck ) {
-	        	$this->logger->debug( "WARNING:: " . $dbConn->num_rows . 
+	        	$this->logger->debug( "WARNING:: " . $result->num_rows . 
 	        		            " rows selected. Less than expected." ) ;
 	    	}
         }
@@ -76,8 +76,6 @@ abstract class AbstractDAO {
 
 	protected function selectSingleValue( $query, $defaultValue=NULL ) {
 
-	    global $dbConn ;
-
 	    $singleValue = $defaultValue ;
 	    $result = $this->executeSelect( $query ) ;
 
@@ -86,6 +84,26 @@ abstract class AbstractDAO {
     		$this->logger->debug( "\tValue from database is " . $singleValue ) ;
     	}
 	    return $singleValue ;
+	}
+
+	protected function getResultAsArray( $query ) {
+
+	    $retVal = array() ;
+	    $result = $this->executeSelect( $query ) ;
+	    while( $row = $result->fetch_array() ) {
+	    	array_push( $retVal, $row[0] ) ;
+	    }
+	    return $retVal ;
+	}
+
+	protected function getResultAsMap( $query ) {
+
+	    $retVal = array() ;
+	    $result = $this->executeSelect( $query ) ;
+	    while( $row = $result->fetch_array() ) {
+	    	$retVal[ $row[0] ] = $row[1] ;
+	    }
+	    return $retVal ;
 	}
 }
 

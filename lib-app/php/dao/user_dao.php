@@ -23,6 +23,11 @@ interface UserDAO {
 	function loadUserPreferences( $userName ) ;
 
 	function saveUserPreference( $userName, $key, $value ) ;
+
+	// --------------- USER ENTITLEMENT FUNCTIONS ------------------------------
+	function getUserRoles( $userName ) ;
+
+	function getUserEntitlements( $userName ) ;
 }
 
 class UserDAOImpl extends AbstractDAO implements UserDAO {
@@ -94,7 +99,7 @@ class UserDAOImpl extends AbstractDAO implements UserDAO {
 	 */
 	function loadUserPreferences( $userName ) {
 
-		$result = parent::executeSelect(
+		$result = parent::getResultAsMap(
 			"select p.key, p.value " .
 			"from user.user_preferences p " .
 			"where " .
@@ -108,8 +113,56 @@ class UserDAOImpl extends AbstractDAO implements UserDAO {
 
 	function saveUserPreference( $userName, $key, $value ) {
 
+		throw new Exception( "TODO: UserDAOImpl::saveUserPreference" ) ;
 	}
 
+
+	function getUserRoles( $userName ) {
+
+		$roles = parent::getResultAsArray(
+			"select distinct value from user.entitlement " .
+			"where " .
+				"value_type='ROLE' and " .
+				"entity_type='USER' and " .
+				"entity_name='$userName'"
+		) ;
+
+		if( count( $roles ) > 0 ) {
+			$this->collectNestedRoles( $roles, $roles ) ;
+		}
+
+		return $roles ;
+	}
+
+	private function collectNestedRoles( &$allRoles, $thisLevelRoles ) {
+		
+		$childRoles = parent::getResultAsArray(
+			"select distinct value from user.entitlement " .
+			"where " .
+				"value_type='ROLE' and " .
+				"entity_type='ROLE' and " .
+				"entity_name in ('" . implode( "','", $thisLevelRoles ) . "')" 
+		) ;
+
+		if ( count( $childRoles ) > 0 ) {
+
+			$nextLevelCheckRoles = array() ;
+			foreach ( $childRoles as $childRole ) {
+				if( !in_array( $childRole, $allRoles ) ) {
+					array_push( $nextLevelCheckRoles, $childRole ) ;
+					array_push( $allRoles, $childRole ) ;
+				}
+			}
+
+			if( count( $nextLevelCheckRoles ) > 0 ) {
+				$this->collectNestedRoles( $allRoles, $nextLevelCheckRoles ) ;
+			}
+		}
+	}
+
+	function getUserEntitlements( $userName ) {
+
+	}
 }
 
 ?>
