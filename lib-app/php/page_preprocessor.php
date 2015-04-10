@@ -25,7 +25,7 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "request_type_inter
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "authentication_interceptor.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "user_context_interceptor.php" ) ;
 
-require_once( DOCUMENT_ROOT . "/lib-app/php/api/api_invoker.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/api/api_utils.php" ) ;
 
 try {
 	runInitializers() ;
@@ -37,8 +37,7 @@ catch( Exception $e ) {
 		die() ;
 	}
 	else {
-		$invoker = new APIInvoker() ;
-		$invoker->writeErrorResponse( "API exception. Message = $e" ) ;
+		APIUtils::writeAPIErrorResponse( APIResponse::SC_ERR_INTERNAL_SERVER_ERROR, $e ) ;
 	}
 }
 

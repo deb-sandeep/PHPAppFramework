@@ -1,3 +1,3 @@
 RewriteEngine On  
 
-RewriteRule ^api/(.*)$ api_gateway.php?path=$1 [QSA,NC,L]
+RewriteRule ^api/(.*)$ lib-app/php/api/api_gateway.php?_path_=$1 [QSA,NC,L]

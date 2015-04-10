@@ -6,6 +6,8 @@
 An extremely thin base framework for developing PHP applications. Features include:
 
 * Support for Web and API channels
+* RESTful API server with easy API base definition
+  * Dynamically linked and loaded API classes
 * Authentication
   * Login/password
   * Token based reauthentication

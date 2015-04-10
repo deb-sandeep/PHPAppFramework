@@ -4,6 +4,7 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/utils/http_utils.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/services/authentication_service.php" ) ;
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/interceptor.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/api/api_utils.php" ) ;
 
 abstract class AuthenticationInterceptor extends Interceptor {
 
@@ -245,12 +246,8 @@ class APIAuthenticationInterceptor extends AuthenticationInterceptor {
 		}
 		catch( AuthenticationException $e ) {
 			$this->logger->error( "Invalid token. Message = " . $e ) ;
-			APIInvoker::writeErrorResponse( "Authentication failed. Message $e" ) ;
-		}
-
-		if( PHP_SELF != API_GATEWAY_SERVICE_PATH ) {
-			$this->logger->error( "API request is not being sent to API gateway" ) ;
-			APIInvoker::writeErrorResponse( "API request is not sent to the API gateway." ) ;
+			APIUtils::writeAPIErrorResponse( APIResponse::SC_ERR_UNAUTHORIZED, 
+				                         "Authentication failed. Message $e" ) ;
 		}
 	}
 

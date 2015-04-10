@@ -32,6 +32,13 @@ interface UserDAO {
 
 class UserDAOImpl extends AbstractDAO implements UserDAO {
 
+	private $logger ;
+
+	function __construct() {
+		parent::__construct() ;
+		$this->logger = Logger::getLogger( __CLASS__ ) ;
+	}
+
 	function getUserPassword( $userName ) {
 
 	    return parent::selectSingleValue( 

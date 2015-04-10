@@ -5,20 +5,14 @@ require_once( $_SERVER['DOCUMENT_ROOT']."/lib-app/php/page_preprocessor.php" ) ;
 <head>
 	<script src="/lib-ext/jquery/jquery-2.1.1.min.js"></script>
 	<script>
-	function sendAsyncRequest( apiName, payload ) {
+	function sendAsyncRequest( apiPath, payload ) {
 
-        var reqAttributes = {} ;
-        reqAttributes[ "apiName" ] = apiName ;
-        reqAttributes[ "payload" ] = payload ;
-
-        var serializedRequest = JSON.stringify( reqAttributes ) ;
+        var serializedRequest = JSON.stringify( payload ) ;
 
         $.ajax({
             type: 'POST',
-            url: '<?php echo API_GATEWAY_SERVICE_PATH ?>',
-            data: {
-                apiRequest : serializedRequest
-            },
+            url: apiPath,
+            data: serializedRequest,
             headers: {
             	Accept: "application/json"
             },
@@ -35,7 +29,7 @@ require_once( $_SERVER['DOCUMENT_ROOT']."/lib-app/php/page_preprocessor.php" ) ;
 		var payload = {} ;
 		payload[ "name" ] = "Sandeep" ;
 
-		sendAsyncRequest( "TestAPI", payload ) ;
+		sendAsyncRequest( "/api/Greetings", payload ) ;
 	}
 	</script>
 </head>

@@ -16,11 +16,11 @@ class ExecutionContext {
 	}
 
 	static function isWebRequest() {
-		return self::$requestType == "WEB" ;
+		return self::$requestType == REQUEST_TYPE_WEB ;
 	}
 
 	static function isAPIRequest() {
-		return self::$requestType == "API" ;
+		return self::$requestType == REQUEST_TYPE_API ; 
 	}
 
 	static function setCurrentUser( $userName ) {

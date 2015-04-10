@@ -3,13 +3,14 @@
     <appender name="default" class="LoggerAppenderFile">
         <layout class="LoggerLayoutPattern">
            <param name="conversionPattern" 
-                  value="%-5level [%class] %msg%n" /> 
+                  value="%-5level [%logger] %msg%n" /> 
         </layout>
         <param name="file" value="/var/log/php.log" />
         <param name="append" value="true" />
     </appender>
 
     <root>
+        <level value="debug" />
         <appender_ref ref="default" />
     </root>
 

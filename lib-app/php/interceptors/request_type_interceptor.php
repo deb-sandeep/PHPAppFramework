@@ -1,5 +1,6 @@
 <?php
 
+require_once( DOCUMENT_ROOT . "/lib-app/php/configs/constants.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/interceptor.php" ) ;
 
 class RequestTypeInterceptor extends Interceptor {
@@ -17,10 +18,9 @@ class RequestTypeInterceptor extends Interceptor {
 
 	function intercept() {
 
-		$requestType = "WEB" ;
-		$accept = $_SERVER[ 'HTTP_ACCEPT' ] ;
-		if( $accept == "application/json" ) {
-			$requestType = "API" ;
+		$requestType = REQUEST_TYPE_WEB ;
+		if( PHP_SELF == API_GATEWAY_SERVICE_PATH ) {
+			$requestType = REQUEST_TYPE_API ;
 		}
 
 		$this->logger->debug( "\tRequest is of type $requestType." ) ;

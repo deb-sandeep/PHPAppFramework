@@ -8,9 +8,6 @@ define( "PHP_SELF",             $_SERVER['PHP_SELF'] ) ;
 define( "DOCUMENT_ROOT",        $_SERVER['DOCUMENT_ROOT'] ) ;
 
 // Logging subsystem parameters
-define( "LOG_LEVEL",            "debug" ) ;
-//define( "LOG_PATTERN",          "%message [%date{H:i:s} %file(%L)] %newline" ) ;
-define( "LOG_PATTERN",          "%message%newline" ) ;
 define( "LOG_FILE_PATH",        DOCUMENT_ROOT . "/var/log/php.log" ) ;
 
 define( "DB_HOST",              "localhost" ) ;

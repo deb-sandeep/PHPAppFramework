@@ -1,34 +1,86 @@
 <?php
 
-abstract class API {
+final class APIRequest {
 
-	protected $executionStatus    = "SUCCESS" ;
-	protected $executionStatusMsg = NULL ;
+	const METHOD_GET    = "GET" ;
+	const METHOD_PUT    = "PUT" ;
+	const METHOD_POST   = "POST" ;
+	const METHOD_DELETE = "DELETE" ;
 
-	protected $requestPayload = NULL ;
-
-	function __construct() {
-	}
-
-	public function setRequestPayload( $requestPayload ) {
-		$this->requestPayload = $requestPayload ;
-	}
-
-	public function preExecute() {}
-
-	public function execute() {} 
-
-	public function postExecute() {}
-
-	public function getExecutionStatus() {
-		return $this->executionStatus ;
-	}
-
-	public function getExecutionStatusMessage() {
-		return $this->executionStatusMsg ;
-	}
-
-	public abstract function getResponse() ;
+	public $method                = NULL ;
+	public $resourceName          = NULL ;
+	public $requestPathComponents = NULL ;
+	public $parametersMap         = NULL ;
+	public $requestBody           = NULL ;
 }
 
+final class APIResponse {
+
+	const SC_OK                        = 200 ;
+	const SC_CREATED                   = 201 ;
+	const SC_NO_CONTENT                = 204 ;
+	const SC_ERR_BAD_REQUEST           = 400 ;
+	const SC_ERR_FORBIDDEN             = 403 ;
+	const SC_ERR_UNAUTHORIZED          = 401 ;
+	const SC_ERR_NOT_FOUND             = 404 ;
+	const SC_ERR_INTERNAL_SERVER_ERROR = 500 ;
+	const SC_ERR_NOT_IMPLEMENTED       = 501 ;
+	
+	public $responseCode = 0 ;
+	public $responseBody = NULL ;
+}
+
+abstract class API {
+
+	protected $logger ;
+
+	function __construct() {
+		$this->logger = Logger::getLogger( __CLASS__ ) ;
+	}
+
+	final function execute( $request ) {
+		$response = new APIResponse() ;
+		$response->responseCode = APIResponse::SC_ERR_NOT_IMPLEMENTED ;
+
+		$this->logger->debug( "Executing API $request->method " .
+			                  "$request->resourceName" ) ;
+
+		switch( $request->method ) {
+
+			case APIRequest::METHOD_GET:
+				$this->doGet( $request, $response ) ;
+				break ;
+
+			case APIRequest::METHOD_PUT:
+				$this->doPut( $request, $response ) ;
+				break ;
+
+			case APIRequest::METHOD_POST:
+				$this->doPost( $request, $response ) ;
+				break ;
+
+			case APIRequest::METHOD_DELETE:
+				$this->doDelete( $request, $response ) ;
+				break ;
+		}
+
+		return $response ;
+	}
+
+	function doGet( $request, &$response ) {
+		$this->logger->debug( "Executing doGet in API base class." ) ;
+	}
+
+	function doPut( $request, &$response ) {
+		$this->logger->debug( "Executing doPut in API base class." ) ;
+	}
+
+	function doPost( $request, &$response ) {
+		$this->logger->debug( "Executing doPost in API base class." ) ;
+	}
+
+	function doDelete( $request, &$response ) {
+		$this->logger->debug( "Executing doDelete in API base class." ) ;
+	}
+}
 ?>
