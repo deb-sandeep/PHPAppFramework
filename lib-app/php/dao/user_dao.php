@@ -110,7 +110,7 @@ class UserDAOImpl extends AbstractDAO implements UserDAO {
 			"select p.key, p.value " .
 			"from user.user_preferences p " .
 			"where " .
-				"p.user_name = '$userName' or p.user_name is NULL " .
+				"p.user_name = '$userName' or p.user_name = '' " .
 			"order by " .
 				"p.user_name asc"
 		) ;
@@ -120,7 +120,15 @@ class UserDAOImpl extends AbstractDAO implements UserDAO {
 
 	function saveUserPreference( $userName, $key, $value ) {
 
-		throw new Exception( "TODO: UserDAOImpl::saveUserPreference" ) ;
+		$this->logger->debug( "Saving pref for $userName. [$key]=$value" ) ;
+
+		$query = <<< QUERY
+INSERT INTO `user`.`user_preferences` (`user_name`, `key`, `value`) 
+VALUES ( '$userName', '$key', '$value' )
+on duplicate key update `value` = values ( `value` )
+QUERY;
+
+		parent::executeInsert( $query ) ;
 	}
 
 

@@ -1,6 +1,6 @@
 <?php
 
-class AbstractDAOTest extends PHPUnit_Framework_TestCase {
+class AbstractDAOTestCase extends PHPUnit_Framework_TestCase {
 
 	private $logger ;
 
@@ -21,8 +21,10 @@ class AbstractDAOTest extends PHPUnit_Framework_TestCase {
 	function tearDown() {
 
 		global $dbConn ;
-		$dbConn->close() ;
-		$this->logger->debug( "Closed the DBConnection" ) ;
+		if( $dbConn != NULL ) {
+			$dbConn->close() ;
+			$this->logger->debug( "Closed the DBConnection" ) ;
+		}
 	}
 }
 

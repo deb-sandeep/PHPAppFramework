@@ -61,7 +61,11 @@ class HTTPUtils {
 	}
 
 	static function setCookie( $name, $value, $durationInDays ) {
-		setcookie( $name, $value, time() + 60*60*24*$durationInDays, "/" ) ;
+		$longevity = $durationInDays ;
+		if( $durationInDays > 0 ) {
+			$longevity = time() + 60*60*24*$durationInDays ;
+		}
+		setcookie( $name, $value, $longevity, "/" ) ;
 	}
 
 	static function deleteCookie( $name ) {

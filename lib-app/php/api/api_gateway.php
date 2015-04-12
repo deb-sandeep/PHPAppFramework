@@ -16,7 +16,7 @@ catch( Exception $e ) {
 }
 
 try {
-	$api = APIUtils::loadAPI( $apiRequest->resourceName ) ;
+	$api = APIUtils::loadAPI( $apiRequest->appName, $apiRequest->resourceName ) ;
 	$log->debug( "Successfully loaded API $apiRequest->resourceName" ) ;
 }
 catch( Exception $e ) {

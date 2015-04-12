@@ -8,6 +8,7 @@ final class APIRequest {
 	const METHOD_DELETE = "DELETE" ;
 
 	public $method                = NULL ;
+	public $appName               = NULL ;
 	public $resourceName          = NULL ;
 	public $requestPathComponents = NULL ;
 	public $parametersMap         = NULL ;

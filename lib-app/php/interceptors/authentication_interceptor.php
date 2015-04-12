@@ -1,6 +1,7 @@
 <?php
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/utils/http_utils.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/dao/user_dao.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/services/authentication_service.php" ) ;
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/interceptor.php" ) ;
@@ -19,6 +20,7 @@ class WebAuthenticationInterceptor extends Interceptor {
 	const REQ_PARAM_LOGIN       = "login" ;
 	const REQ_PARAM_PASSWORD    = "password" ;
 	const REQ_PARAM_REMEMBER_ME = "remember_me" ;
+	const REQ_PARAM_DEFAULT_APP = "default_app" ;
 
 	const REQ_TYPE_UNAUTHENTICATED = "REQ_TYPE_UNAUTHENTICATED" ;
 	const REQ_TYPE_PWD_AUTH        = "REQ_TYPE_PWD_AUTH" ;
@@ -123,6 +125,7 @@ class WebAuthenticationInterceptor extends Interceptor {
 			$this->authenticationService
 			     ->validateCredentials( $this->userName, $password ) ;
 			$this->clearRequestedPageDetailsInSession() ;
+			$this->saveDefaultAppPreference() ;
 			$this->setAuthenticationTokenCookie() ;
 			ExecutionContext::setCurrentUser( $this->userName ) ;
 		}
@@ -132,6 +135,15 @@ class WebAuthenticationInterceptor extends Interceptor {
 			$this->setErrorMessageInSession( $e ) ;
 			HTTPUtils::redirectTo( LOGIN_PAGE_PATH ) ;
 		}
+	}
+
+	private function saveDefaultAppPreference() {
+
+		$userDAO = new UserDAOImpl() ;
+		$defaultAppName = HTTPUtils::getRequestParameterValue( self::REQ_PARAM_DEFAULT_APP ) ;
+
+		$userDAO->saveUserPreference( $this->userName, UPK_DEFAULT_APP_NAME, 
+			                          $defaultAppName ) ;
 	}
 
 	private function setAuthenticationTokenCookie() {

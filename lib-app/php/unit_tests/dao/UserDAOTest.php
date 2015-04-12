@@ -3,7 +3,7 @@
 require_once( DOCUMENT_ROOT . "/lib-app/php/unit_tests/dao/AbstractDAOTestCase.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/dao/user_dao.php" ) ;
 
-class UserDAOTest extends AbstractDAOTest {
+class UserDAOTest extends AbstractDAOTestCase {
 
 	private $logger ;
 	private $userDAO ;

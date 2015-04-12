@@ -8,7 +8,7 @@ $logger = Logger::getLogger( "GLOBAL_UT_LOGGER" ) ;
 
 define( "DOCUMENT_ROOT", "/home/sandeep/projects/source/PHPAppFramework" ) ;
 
-$dbConn ;
+$dbConn = NULL ;
 
 
 ?>

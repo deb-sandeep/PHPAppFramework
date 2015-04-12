@@ -1,22 +1,27 @@
 <?php
 
-require_once( $_SERVER['DOCUMENT_ROOT']."/lib-app/php/api/api.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/api/api.php" ) ;
 
 class APIUtils {
 
 	static $logger ;
 
 	const REWRITTEN_URL_PATH_KEY = "_path_" ;
+	const REWRITTEN_URL_APP_KEY  = "_app_" ;
 
 	static function createAPIRequest() {
 
 		self::$logger->debug( "Creating API request." ) ;
 		$apiRequest = new APIRequest() ;
 
+		$apiRequest->appName = $_REQUEST[ self::REWRITTEN_URL_APP_KEY ] ;
+		if( $apiRequest->appName == "" ) {
+			$apiRequest->appName = "_common" ;
+		}
+
 		if( !array_key_exists( self::REWRITTEN_URL_PATH_KEY, $_REQUEST ) ) {
 			throw new Exception( "API resource path missing in request." ) ;
 		}
-
 		self::$logger->debug( "Resource path = " . $_REQUEST[ self::REWRITTEN_URL_PATH_KEY ] ) ;
 		$resourcePath = explode( "/", $_REQUEST[ self::REWRITTEN_URL_PATH_KEY ] ) ;
 
@@ -97,28 +102,19 @@ class APIUtils {
 		self::writeAPIResponse( $apiResponse ) ;
 	}
 
-	static function loadAPI( $apiName ) {
+	static function loadAPI( $appName, $apiName ) {
 
 		global $API_INCLUDE_FOLDER_LIST ;
 		$apiDefinitionFile = NULL ;
 		$api = NULL ;
 
-		self::$logger->debug( "Loading API $apiName." ) ;
-		foreach( $API_INCLUDE_FOLDER_LIST as $apiIncludeFolder ) {
+		self::$logger->debug( "Loading API $apiName for app $appName" ) ;
 
-			self::$logger->debug( "Checking API include folder - $apiIncludeFolder" ) ;
-			$apiDefinitionFile = $apiIncludeFolder . $apiName . "API.php" ;
+		$apiDefinitionFile = DOCUMENT_ROOT . "/apps/$appName/php/api/$apiName" . "API.php" ;
+		self::$logger->debug( "Loading API definition file - $apiDefinitionFile" ) ;
 
-			if( file_exists( $apiDefinitionFile ) ) {
-				self::$logger->debug( "API found" ) ;
-				break ;
-			}
-			else {
-				$apiDefinitionFile = NULL ;
-			}
-		}
-
-		if( $apiDefinitionFile != NULL ) {
+		if( file_exists( $apiDefinitionFile ) ) {
+			self::$logger->debug( "API found" ) ;
 			include_once( $apiDefinitionFile ) ;
 			$className = $apiName . "API" ;
 			$api = new $className() ;
@@ -129,6 +125,7 @@ class APIUtils {
 		else {
 			throw new Exception( "API $apiName not found on server." ) ;
 		}
+
 		return $api ;
 	}		
 }

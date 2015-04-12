@@ -14,6 +14,7 @@ $dbConn ;
 $initializer_chain = array() ;
 $interceptor_chain = array() ;
 
+require_once( DOCUMENT_ROOT . "/lib-app/php/utils/server_context.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/utils/execution_context.php" ) ;
 
 // Load the initializers
@@ -24,16 +25,20 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/" . "db_initializer.php
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "request_type_interceptor.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "authentication_interceptor.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "user_context_interceptor.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "landing_page_interceptor.php" ) ;
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/api/api_utils.php" ) ;
 
 try {
+	
+	ServerContext::setAppConfigs( $APP_CONFIG_DATA ) ;
+
 	runInitializers() ;
 	runInterceptors() ;
 }
 catch( Exception $e ) {
 	if( ExecutionContext::isWebRequest() ) {
-		include( ERROR_PAGE_PATH ) ;
+		include( ERROR_PAGE_INCLUDE_PATH ) ;
 		die() ;
 	}
 	else {
