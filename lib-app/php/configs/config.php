@@ -13,7 +13,7 @@ define( "DB_USER",              "root" ) ;
 define( "DB_PASSWORD",          getenv( "DB_PASSWORD") ) ;
 define( "DB_SCHEMA",            "study" ) ;
 
-define( "ERROR_PAGE_INCLUDE_PATH", DOCUMENT_ROOT . "/lib-app/php/web/error.php" ) ;
+define( "ERROR_PAGE_INCLUDE_PATH", DOCUMENT_ROOT . "/lib-app/php/web/default_error_page.php" ) ;
 
 define( "NUM_DAYS_TO_REMEMBER_USER", 30 ) ;
 define( "NUM_DAYS_TO_REMEMBER_INACTIVE_USER", 7 ) ;

@@ -106,16 +106,18 @@ class UserDAOImpl extends AbstractDAO implements UserDAO {
 	 */
 	function loadUserPreferences( $userName ) {
 
-		$result = parent::getResultAsMap(
-			"select p.key, p.value " .
-			"from user.user_preferences p " .
-			"where " .
-				"p.user_name = '$userName' or p.user_name = '' " .
-			"order by " .
-				"p.user_name asc"
-		) ;
+$query = <<< QUERY
+select m.key, if( p.value is null, m.default_value, p.value ) as value 
+from user.user_preferences p right join 
+     user.user_preferences_master m 
+on 
+	p.key = m.key 
+where 
+	p.user_name = '$userName' or 
+	p.user_name is null
+QUERY;
 
-		return $result ;
+		return parent::getResultAsMap( $query ) ;
 	}
 
 	function saveUserPreference( $userName, $key, $value ) {
@@ -123,8 +125,8 @@ class UserDAOImpl extends AbstractDAO implements UserDAO {
 		$this->logger->debug( "Saving pref for $userName. [$key]=$value" ) ;
 
 		$query = <<< QUERY
-INSERT INTO `user`.`user_preferences` (`user_name`, `key`, `value`) 
-VALUES ( '$userName', '$key', '$value' )
+insert into `user`.`user_preferences` (`user_name`, `key`, `value`) 
+values ( '$userName', '$key', '$value' ) 
 on duplicate key update `value` = values ( `value` )
 QUERY;
 
