@@ -30,7 +30,6 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "landing_page_inter
 require_once( DOCUMENT_ROOT . "/lib-app/php/api/api_utils.php" ) ;
 
 try {
-	
 	ServerContext::setAppConfigs( $APP_CONFIG_DATA ) ;
 
 	runInitializers() ;

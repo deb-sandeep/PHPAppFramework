@@ -15,9 +15,9 @@ class ServerContextTest extends PHPUnit_Framework_TestCase {
 		$config = 
 <<<CONFIG
 {
-	"default_landing_page" : "test.php",
+	"landing_page" : "test.php",
 	"test_app" : {
-		"default_landing_page" : "dlp_test_app.php"
+		"landing_page" : "dlp_test_app.php"
 	},
 	"jove_notes" : {
 		"some_property" : "some_value"
@@ -27,16 +27,16 @@ CONFIG;
 
 		ServerContext::setAppConfigs( $config ) ;
 		$this->assertEquals( "test.php",         
-							 ServerContext::getDefaultLandingPage() ) ;
+							 ServerContext::getLandingPage() ) ;
 		
 		$this->assertEquals( "dlp_test_app.php", 
-			                 ServerContext::getDefaultLandingPage( "test_app" ) ) ;
+			                 ServerContext::getLandingPage( "test_app" ) ) ;
 
 		$this->assertEquals( "test.php", 
-			                 ServerContext::getDefaultLandingPage( "jove_notes" ) ) ;
+			                 ServerContext::getLandingPage( "jove_notes" ) ) ;
 
 		try{
-			ServerContext::getDefaultLandingPage( "non_configured_app" ) ;
+			ServerContext::getLandingPage( "non_configured_app" ) ;
 			$this->fail( "landing page for non configured app returned." ) ;
 		}
 		catch( Exception $e ) {

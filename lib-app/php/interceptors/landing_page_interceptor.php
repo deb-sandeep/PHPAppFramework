@@ -31,7 +31,7 @@ class LandingPageInterceptor extends Interceptor {
 
 		$this->logger->debug( "Default application is $defaultAppName" ) ;
 		
-		$defaultLandingPage = ServerContext::getDefaultLandingPage( $defaultAppName ) ;
+		$defaultLandingPage = ServerContext::getLandingPage( $defaultAppName ) ;
 		$this->logger->debug( "Default LP $defaultLandingPage" ) ;
 
 		include( DOCUMENT_ROOT . $defaultLandingPage ) ;

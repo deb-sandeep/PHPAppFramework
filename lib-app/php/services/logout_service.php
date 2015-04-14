@@ -5,5 +5,5 @@ require_once( $_SERVER['DOCUMENT_ROOT']."/lib-app/php/page_preprocessor.php" ) ;
 // interceptor.
 
 // NOTE: The user will be redirected to a page defined by the configuration 
-//       constant POST_LOGOUT_PAGE_PATH.
+//       ExecutionContext::getLogoutPage().
 ?>

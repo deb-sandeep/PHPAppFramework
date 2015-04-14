@@ -6,6 +6,7 @@ class ExecutionContext {
 
 	static private $requestType = "WEB" ;
 	static private $currentUser = NULL ;
+	static $logger ;
 
 	static function setRequestType( $type ) {
 		self::$requestType = $type ;
@@ -35,5 +36,7 @@ class ExecutionContext {
 		return self::$currentUser ;
 	}
 }
+
+ExecutionContext::$logger = Logger::getLogger( "ExecutionContext" ) ;
 
 ?>

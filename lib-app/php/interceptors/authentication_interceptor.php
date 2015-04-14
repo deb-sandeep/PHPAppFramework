@@ -93,7 +93,7 @@ class WebAuthenticationInterceptor extends Interceptor {
 		// for logout will have to preceed the auth token, else the request will
 		// land up in the logout.php without the interceptor processing the
 		// logout trigger.
-		if( PHP_SELF == LOGIN_PAGE_PATH ) {
+		if( PHP_SELF == ServerContext::getLoginPage() ) {
 			return self::REQ_TYPE_LOGIN_PAGE_LOAD ;
 		}
 		else if( PHP_SELF == LOGOUT_SERVICE ) {
@@ -113,7 +113,7 @@ class WebAuthenticationInterceptor extends Interceptor {
 	private function processUnauthenticatedRequest() {
 
 		$this->saveRequestedPageDetailsInSession() ;
-		HTTPUtils::redirectTo( LOGIN_PAGE_PATH ) ;
+		HTTPUtils::redirectTo( ServerContext::getLoginPage() ) ;
 	}
 
 	private function processLoginPasswordAuthentication() {
@@ -133,7 +133,7 @@ class WebAuthenticationInterceptor extends Interceptor {
 
 			$this->logger->error( "Invalid login/password. Message = " . $e ) ;
 			$this->setErrorMessageInSession( $e ) ;
-			HTTPUtils::redirectTo( LOGIN_PAGE_PATH ) ;
+			HTTPUtils::redirectTo( ServerContext::getLoginPage() ) ;
 		}
 	}
 
@@ -180,7 +180,7 @@ class WebAuthenticationInterceptor extends Interceptor {
 			$this->setErrorMessageInSession( $e ) ;
 		    $this->saveRequestedPageDetailsInSession() ;
 		    $this->deleteAuthenticationTokenCookie() ;
-			HTTPUtils::redirectTo( LOGIN_PAGE_PATH ) ;
+			HTTPUtils::redirectTo( ServerContext::getLoginPage() ) ;
 		}
 	}
 
@@ -199,7 +199,7 @@ class WebAuthenticationInterceptor extends Interceptor {
 		HTTPUtils::invalidateSession() ;
 		
 		$this->logger->debug( "Redirecting user to post logout page." ) ;
-		HTTPUtils::redirectTo( POST_LOGOUT_PAGE_PATH ) ;
+		HTTPUtils::redirectTo( ServerContext::getLogoutPage() ) ;
 	}
 
 	private function deleteAuthenticationTokenCookie() {
