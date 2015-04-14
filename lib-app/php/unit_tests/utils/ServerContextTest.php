@@ -16,6 +16,8 @@ class ServerContextTest extends PHPUnit_Framework_TestCase {
 <<<CONFIG
 {
 	"landing_page" : "test.php",
+	"logout_page"  : "logout.php",
+	"login_page"   : "login.php",
 	"test_app" : {
 		"landing_page" : "dlp_test_app.php"
 	},
