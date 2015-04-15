@@ -74,4 +74,25 @@ class AuthorizationServiceTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertNotNull( Authorizer::getAccessFlags( $guard ) ) ;
 	}
+
+	function testCheckReducedAccess() {
+
+		$this->user->addEntitlement( "+:w:page:/lib-app/php/**" ) ;
+		$guard = "page:/lib-app/php/services/profile.php" ;
+		
+		$this->assertFalse( Authorizer::isReadAuthorized( $guard ) ) ;
+		$this->assertTrue ( Authorizer::isWriteAuthorized( $guard ) ) ;
+		$this->assertFalse( Authorizer::isExecuteAuthorized( $guard ) ) ;
+	}
+
+	function testCheckReducedAccessOverride() {
+
+		$this->user->addEntitlement( "+   :  w  :page:/lib-app/php/**" ) ;
+		$this->user->addEntitlement( "(+) : ..+ :page:/lib-app/php/**/profile.php" ) ;
+		$guard = "page:/lib-app/php/services/profile.php" ;
+		
+		$this->assertFalse( Authorizer::isReadAuthorized( $guard ) ) ;
+		$this->assertTrue ( Authorizer::isWriteAuthorized( $guard ) ) ;
+		$this->assertTrue ( Authorizer::isExecuteAuthorized( $guard ) ) ;
+	}
 }

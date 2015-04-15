@@ -117,6 +117,38 @@ class Authorizer {
 		return self::$service->getAccessFlags( 
 			           	ExecutionContext::getCurrentUser(), $entitlementGuard ) ;
 	}
+
+	static function isAuthorized( $entitlementGuard ) {
+		return !is_null( self::getAccessFlags( $entitlementGuard ) ) ;
+	}
+
+	static function isReadAuthorized( $entitlementGuard ) {
+		$accessFlags = self::getAccessFlags( $entitlementGuard ) ;
+		if( !is_null( $accessFlags ) ) {
+			return $accessFlags->isReadPermitted() ;
+		}
+		return false ;
+	}
+
+	static function isWriteAuthorized( $entitlementGuard ) {
+		$accessFlags = self::getAccessFlags( $entitlementGuard ) ;
+		if( !is_null( $accessFlags ) ) {
+			return $accessFlags->isWritePermitted() ;
+		}
+		return false ;
+	}
+
+	static function isExecuteAuthorized( $entitlementGuard ) {
+		$accessFlags = self::getAccessFlags( $entitlementGuard ) ;
+		if( !is_null( $accessFlags ) ) {
+			return $accessFlags->isExecutePermitted() ;
+		}
+		return false ;
+	}
+
+	static function checkAuthorized( $entitlementGuard ) {
+		throw new AuthorizationException() ;
+	}
 }
 
 Authorizer::$logger  = Logger::getLogger( "Authorizer" ) ;
