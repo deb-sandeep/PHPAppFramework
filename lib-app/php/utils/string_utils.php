@@ -4,7 +4,7 @@ class StringUtils {
 
 	static $logger ;
 
-	static function convertToPregPattern( $input ) {
+	private static function convertToPregPattern( $input ) {
 
 		self::$logger->debug( "Input = $input" ) ;
 		$returnVal = preg_quote( $input ) ;

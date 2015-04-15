@@ -58,13 +58,13 @@ class UserVOTest extends PHPUnit_Framework_TestCase {
 
 	public function testAddEntitlements() {
 
-		$this->user->addEntitlement( "+:page:/admin/profile*.php" ) ;
-		$this->user->addEntitlement( "+:page:/billing/**" ) ;
-		$this->user->addEntitlement( "+:chapter:Chapter" ) ;
-		$this->user->addEntitlement( "-:page:/admin/php/**" ) ;
+		$this->user->addEntitlement( "+::page:/admin/profile*.php" ) ;
+		$this->user->addEntitlement( "+::page:/billing/**" ) ;
+		$this->user->addEntitlement( "+::chapter:Chapter" ) ;
+		$this->user->addEntitlement( "-::page:/admin/php/**" ) ;
 
-		$this->user->addEntitlement( "(+):page:/admin/profile_su.php" ) ;
-		$this->user->addEntitlement( "(-):page:/admin/php/vo/**" ) ;
+		$this->user->addEntitlement( "(+)::page:/admin/profile_su.php" ) ;
+		$this->user->addEntitlement( "(-)::page:/admin/php/vo/**" ) ;
 
 		$includeEntsPage     = $this->user->getInclusionEntitlements( "page" ) ;
 		$excludeEntsPage     = $this->user->getExclusionEntitlements( "page" ) ;
@@ -73,20 +73,39 @@ class UserVOTest extends PHPUnit_Framework_TestCase {
 		$excludeOverrideEnts = $this->user->getExclusionOverrideEntitlements( "page" ) ;
 
 		$this->assertCount( 2, $includeEntsPage ) ;
-		$this->assertContains( "/admin/profile*.php", $includeEntsPage ) ;
-		$this->assertContains( "/billing/**",         $includeEntsPage ) ;
+		$this->assertTrue( $this->isEntitlementPresent( 
+						   new Entitlement( "+::page:/admin/profile*.php" ), 
+						   $includeEntsPage ) ) ;
+		$this->assertTrue( $this->isEntitlementPresent( 
+			               new Entitlement( "+::page:/billing/**" ), 
+			               $includeEntsPage ) ) ;
 
 		$this->assertCount( 1, $excludeEntsPage ) ;
-		$this->assertContains( "/admin/php/**", $excludeEntsPage ) ;
+		$this->assertTrue( $this->isEntitlementPresent( 
+			               new Entitlement( "-::page:/admin/php/**" ), 
+			               $excludeEntsPage ) ) ;
 
 		$this->assertCount( 1, $includeEntsChapter ) ;
-		$this->assertContains( "Chapter", $includeEntsChapter ) ;
+		$this->assertTrue( $this->isEntitlementPresent( 
+			               new Entitlement( "+::chapter:Chapter" ), 
+			               $includeEntsChapter ) ) ;
 
 		$this->assertCount( 1, $includeOverrideEnts ) ;
-		$this->assertContains( "/admin/profile_su.php", $includeOverrideEnts ) ;
+		$this->assertTrue( $this->isEntitlementPresent( 
+			               new Entitlement( "(+)::page:/admin/profile_su.php" ), 
+			               $includeOverrideEnts ) ) ;
 
 		$this->assertCount( 1, $excludeOverrideEnts ) ;
-		$this->assertContains( "/admin/php/vo/**", $excludeOverrideEnts ) ;
+		$this->assertTrue( $this->isEntitlementPresent( 
+			               new Entitlement( "(-)::page:/admin/php/vo/**" ), 
+			               $excludeOverrideEnts ) ) ;
+	}
+
+	function isEntitlementPresent( $ent, $entArray ) {
+		foreach( $entArray as $entItem ) {
+			if( $ent == $entItem ) return true ;
+		}
+		return false ;
 	}
 }
 ?>

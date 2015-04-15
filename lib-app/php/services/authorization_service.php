@@ -27,11 +27,12 @@ class AuthorizationService {
 		return false ;
 	}
 
-	function isUserEntitled( $user, $entitlementGuard ) {
+	function getAccessFlags( $user, $entitlementGuard ) {
 
 		$this->logger->debug( "Checking user entitlement for '" . $user->getUserName() .
 			                  "' against guard $entitlementGuard" ) ;
 
+		$accessFlags = NULL ;
 		$guardComponents = A12NUtils::getGuardComponents( $entitlementGuard ) ;
 		$guardType  = $guardComponents[0] ;
 		$guardPath  = $guardComponents[1] ;
@@ -53,45 +54,53 @@ class AuthorizationService {
 			                  sizeof( $exclOverrideEnts ) ) ;
 
 		$this->logger->debug( "Verifying against inclusion entitlements." ) ;
-		if( $this->guardMatches( $guardPath, $inclEnts ) ) {
-			$this->logger->debug( "Inclusion entitlements match." ) ;
-
-			$this->logger->debug( "Verifying against inclusion overrides." ) ;
-			if( $this->guardMatches( $guardPath, $inclOverridesEnts ) ) {
-				$this->logger->debug( "Inclusion overrides match." ) ;
-				return false ;
-			}
+		$accessFlags = $this->matchEntitlements( $guardPath, $inclEnts ) ;
+		if( $accessFlags == NULL || !$accessFlags->hasPrivileges() ) {
+			$this->logger->debug( "No inclusion filter match. Not entitled." ) ;
+			return NULL ;
 		}
 		else {
-			return false ;
+			$inclOverrideMatchAccessFlag = $this->matchEntitlements( 
+				                              $guardPath, $inclOverridesEnts ) ;
+			if( $inclOverrideMatchAccessFlag != NULL ) {
+				$this->logger->debug( "Inclusion override filter match." ) ;
+				$accessFlags->superimpose( $inclOverrideMatchAccessFlag ) ;
+				if( !$accessFlags->hasPrivileges() ) {
+					$this->logger->debug( "All privs revoked by inclusion override." ) ;
+					return NULL ;
+				}
+				$this->logger->debug( "Inclusion override changed access privs." ) ;
+			}
 		}
 
 		$this->logger->debug( "Verifying against exclusion entitlements." ) ;
-		if( $this->guardMatches( $guardPath, $exclEnts ) ) {
+		if( $this->matchEntitlements( $guardPath, $exclEnts ) != NULL ) {
 			$this->logger->debug( "Exclusion entitlements match." ) ;
 
 			$this->logger->debug( "Verifying against exclusion overrides." ) ;
-			if( $this->guardMatches( $guardPath, $exclOverrideEnts ) ) {
+			if( $this->matchEntitlements( $guardPath, $exclOverrideEnts ) != NULL ) {
 				$this->logger->debug( "Exclusion overrides match." ) ;
-				return true ;
+				return $accessFlags ;
 			}
+			return NULL ;
 		}
 		else {
-			return true ;
+			return $accessFlags ;
 		}
-
-		return false ;
 	}
 
-	private function guardMatches( $guardPath, $entitlements ) {
+	private function matchEntitlements( $guardPath, $entitlements ) {
+
+		$accessFlags = NULL ;
 		foreach( $entitlements as $entitlement ) {
-			if( StringUtils::matchSimplePattern( $entitlement, $guardPath ) ) {
-				$this->logger->debug( "\tMatched" ) ;
-				return true ;
+			$accessFlags = $entitlement->match( $guardPath ) ;
+			if( $accessFlags != NULL ) {
+				break ;
 			}
 		}
-		return false ;
+		return $accessFlags ;
 	}
+
 }
 
 class Authorizer {
@@ -104,8 +113,8 @@ class Authorizer {
 						ExecutionContext::getCurrentUser(), $role ) ;
 	}
 
-	static function isUserEntitled( $entitlementGuard ) {
-		return self::$service->isUserEntitled( 
+	static function getAccessFlags( $entitlementGuard ) {
+		return self::$service->getAccessFlags( 
 			           	ExecutionContext::getCurrentUser(), $entitlementGuard ) ;
 	}
 }

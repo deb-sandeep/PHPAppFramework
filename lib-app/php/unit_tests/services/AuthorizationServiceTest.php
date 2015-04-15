@@ -35,43 +35,43 @@ class AuthorizationServiceTest extends PHPUnit_Framework_TestCase {
 
 	function testSimpleAuthorizationPass() {
 
-		$this->user->addEntitlement( "+:page:**/php/**" ) ;
+		$this->user->addEntitlement( "+::page:**/php/**" ) ;
 		$guard = "page:/lib-app/php/services/profile.php" ;
 
-		$this->assertTrue( Authorizer::isUserEntitled( $guard ) ) ;
+		$this->assertNotNull( Authorizer::getAccessFlags( $guard ) ) ;
 	}
 
 	function testSimpleAuthorizationFail() {
 
-		$this->user->addEntitlement( "-:page:**/admin/**" ) ;
+		$this->user->addEntitlement( "-::page:**/admin/**" ) ;
 		$guard = "page:/lib-app/php/services/admin/profile.php" ;
 
-		$this->assertFalse( Authorizer::isUserEntitled( $guard ) ) ;
+		$this->assertNull( Authorizer::getAccessFlags( $guard ) ) ;
 	}
 
 	function testInclusionOverride() {
 
-		$this->user->addEntitlement( "+:page:**/php/**" ) ;
-		$this->user->addEntitlement( "(+):page:**/profile.php" ) ;
+		$this->user->addEntitlement( "+::page:**/php/**" ) ;
+		$this->user->addEntitlement( "(+)::page:**/profile.php" ) ;
 
 		// this guard should pass the **/php/** entitlement, but get 
 		// overridden by **/profile.php - net entitlement false.
 		$guard = "page:/lib-app/php/services/profile.php" ;
 
-		$this->assertFalse( Authorizer::isUserEntitled( $guard ) ) ;
+		$this->assertNull( Authorizer::getAccessFlags( $guard ) ) ;
 	}
 
 	function testExclusionOverride() {
 
-		$this->user->addEntitlement( "+:page:/lib-app/php/**" ) ;
-		$this->user->addEntitlement( "-:page:**/php/**" ) ;
-		$this->user->addEntitlement( "(-):page:**/profile.php" ) ;
+		$this->user->addEntitlement( "+::page:/lib-app/php/**" ) ;
+		$this->user->addEntitlement( "-::page:**/php/**" ) ;
+		$this->user->addEntitlement( "(-)::page:**/profile.php" ) ;
 
 		// Inclusion filter will approve
 		// this guard should fail the **/php/** entitlement, but get 
 		// overridden by **/profile.php - net entitlement true.
 		$guard = "page:/lib-app/php/services/profile.php" ;
 
-		$this->assertTrue( Authorizer::isUserEntitled( $guard ) ) ;
+		$this->assertNotNull( Authorizer::getAccessFlags( $guard ) ) ;
 	}
 }

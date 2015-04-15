@@ -1,6 +1,7 @@
 <?php
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/utils/a12n_utils.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/vo/entitlement.php" ) ;
 
 class User {
 
@@ -115,22 +116,17 @@ class User {
 		}
 	}
 
-	function addEntitlement( $entitlement ) {
+	function addEntitlement( $entitlementString ) {
 		
 		$container = NULL ;
-		$entitlementContainer = NULL ;
 
-		$patternComponents  = A12NUtils::getPatternComponents( $entitlement ) ;
-		$opType             = $patternComponents[0] ;
-		$entitlementType    = $patternComponents[1] ;
-		$entitlementPattern = $patternComponents[2] ;
+		$entitlement = new Entitlement( $entitlementString ) ;
 
 		$this->logger->debug( "Adding entitlement for user $this->userName" ) ;
-		$this->logger->debug( "\topType = $opType" ) ;
-		$this->logger->debug( "\tentitlementType = $entitlementType" ) ;
-		$this->logger->debug( "\tentitlementPattern = $entitlementPattern" ) ;
+		$this->logger->debug( "\tentitlement = " . $entitlement ) ;
 
-		if( !array_key_exists( $entitlementType, $this->entitlements ) ) {
+		if( !array_key_exists( $entitlement->getResourceType(), 
+			                   $this->entitlements ) ) {
 			
 			$container = array() ;
 			$container[ A12NUtils::OP_INCLUDE ] = array() ;
@@ -138,16 +134,16 @@ class User {
 			$container[ A12NUtils::OP_INCLUDE_OVERRIDE ] = array() ;
 			$container[ A12NUtils::OP_EXCLUDE_OVERRIDE ] = array() ;
 
-			$this->entitlements[ $entitlementType ] = &$container ;
+			$this->entitlements[ $entitlement->getResourceType() ] = &$container ;
 		}
 		else {
-			$container = &$this->entitlements[ $entitlementType ] ;
+			$container = &$this->entitlements[ $entitlement->getResourceType() ] ;
 		}
 
-		$entitlementContainer = &$container[ $opType ] ;
-		if( !in_array( $entitlementPattern, $entitlementContainer ) ) {
-			$this->logger->debug( "Pushing pattern $entitlementPattern" ) ;
-			array_push( $entitlementContainer, $entitlementPattern ) ;
+		$entitlementContainer = &$container[ $entitlement->getOpType() ] ;
+		if( !in_array( $entitlement, $entitlementContainer ) ) {
+			$this->logger->debug( "Pushing pattern $entitlement" ) ;
+			array_push( $entitlementContainer, $entitlement ) ;
 		}
 	}
 
