@@ -84,8 +84,7 @@ class User {
 			foreach( $opTypeList as $opType ) {
 				$container = $entContainer[ $opType ] ;
 				foreach( $container as $entitlement ) {
-					array_push( $allEntitlements,
-						        $opType . ":" . $entType . ":" . $entitlement ) ;
+					array_push( $allEntitlements, "" . $entitlement ) ;
 				}
 			}
 		}

@@ -49,10 +49,10 @@ class UserDAOTest extends AbstractDAOTestCase {
 		$entitlements = $this->userDAO->getUserEntitlements( 'UTUser' ) ;
 
 		$this->assertCount( 4, $entitlements ) ;
-		$this->assertContains( "+:ut_page:/pattern/A/**", $entitlements ) ;
-		$this->assertContains( "+:ut_page:/pattern/B/**", $entitlements ) ;
-		$this->assertContains( "+:ut_page:/alias/A/**",   $entitlements ) ;
-		$this->assertContains( "+:ut_page:/alias/A/**",   $entitlements ) ;
+		$this->assertContains( "+::ut_page:/pattern/A/**", $entitlements ) ;
+		$this->assertContains( "+::ut_page:/pattern/B/**", $entitlements ) ;
+		$this->assertContains( "+::ut_page:/alias/A/**",   $entitlements ) ;
+		$this->assertContains( "+::ut_page:/alias/A/**",   $entitlements ) ;
 	}
 }
 
