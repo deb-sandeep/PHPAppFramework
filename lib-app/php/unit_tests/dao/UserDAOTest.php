@@ -43,17 +43,6 @@ class UserDAOTest extends AbstractDAOTestCase {
 		$this->assertContains( "ut.role.1.1.1", $roles ) ;
 		$this->assertContains( "ut.role.1.1.2", $roles ) ;
 	}
-
-	function testLoadUserEntitlements() {
-
-		$entitlements = $this->userDAO->getUserEntitlements( 'UTUser' ) ;
-
-		$this->assertCount( 4, $entitlements ) ;
-		$this->assertContains( "+::ut_page:/pattern/A/**", $entitlements ) ;
-		$this->assertContains( "+::ut_page:/pattern/B/**", $entitlements ) ;
-		$this->assertContains( "+::ut_page:/alias/A/**",   $entitlements ) ;
-		$this->assertContains( "+::ut_page:/alias/A/**",   $entitlements ) ;
-	}
 }
 
 ?>

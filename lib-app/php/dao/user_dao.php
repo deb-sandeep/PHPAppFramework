@@ -136,14 +136,12 @@ QUERY;
 
 	function getUserRoles( $userName ) {
 
-		$roles = parent::getResultAsArray(
-			"select distinct value from user.entitlement " .
-			"where " .
-				"value_type='ROLE' and " .
-				"entity_type='USER' and " .
-				"entity_name='$userName'"
-		) ;
+		$query = <<< QUERY
+select distinct role_name from user.user_roles 
+where user_name = '$userName'
+QUERY ;
 
+		$roles = parent::getResultAsArray( $query ) ;
 		if( count( $roles ) > 0 ) {
 			$this->collectNestedRoles( $roles, $roles ) ;
 		}
@@ -152,14 +150,14 @@ QUERY;
 	}
 
 	private function collectNestedRoles( &$allRoles, $thisLevelRoles ) {
-		
-		$childRoles = parent::getResultAsArray(
-			"select distinct value from user.entitlement " .
-			"where " .
-				"value_type='ROLE' and " .
-				"entity_type='ROLE' and " .
-				"entity_name in ('" . implode( "','", $thisLevelRoles ) . "')" 
-		) ;
+
+		$roleCSV = implode( "','", $thisLevelRoles ) ;
+		$query = <<< QUERY
+select distinct child_role from user.roles
+where name in ( '$roleCSV' ) and child_role is not NULL
+QUERY ;
+
+		$childRoles = parent::getResultAsArray( $query ) ;
 
 		if ( count( $childRoles ) > 0 ) {
 
@@ -178,36 +176,9 @@ QUERY;
 	}
 
 	function getUserEntitlements( $userName, $roles=NULL ) {
-
-		if( $roles == NULL ) {
-			$roles = $this->getUserRoles( $userName ) ;
-		}
-
-		$query = 
-		"select value " .
-		"from user.entitlement " .
-		"where " .
-			"entity_type='USER' and " .
-			"value_type='PATTERN' and " .
-			"entity_name = '$userName' " .
-		"union " .
-		"select value " .
-		"from user.entitlement " .
-		"where " .
-			"entity_type='ROLE' and " .
-			"value_type='PATTERN' and " .
-			"entity_name in ( '" . implode( "','", $roles ) . "')" .
-		"union " .
-		"select a.pattern " .
-		"from user.entitlement_pattern_alias a, user.entitlement e " .
-		"where " .
-			"a.alias = e.value and " .
-			"e.value_type = 'ALIAS' and " .
-			"e.entity_name in ( '$userName', '" . implode( "','", $roles ) . "' ) " ;
-
-		$entitlements = parent::getResultAsArray( $query ) ;
-		return array_unique( $entitlements ) ;
+		// TODO
 	}
+
 }
 
 ?>
