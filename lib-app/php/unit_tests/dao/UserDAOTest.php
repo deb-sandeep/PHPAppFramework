@@ -43,6 +43,11 @@ class UserDAOTest extends AbstractDAOTestCase {
 		$this->assertContains( "ut.role.1.1.1", $roles ) ;
 		$this->assertContains( "ut.role.1.1.2", $roles ) ;
 	}
+
+	function testLoadUserEntitlements() {
+		$ent = $this->userDAO->getEntitlementsForUser( 'UTUser' ) ;
+		$this->logger->debug( "" . $ent ) ;
+	}
 }
 
 ?>

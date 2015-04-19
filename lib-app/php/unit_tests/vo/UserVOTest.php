@@ -58,9 +58,6 @@ class UserVOTest extends PHPUnit_Framework_TestCase {
 		$this->assertContains( "Class-VII-Student", $this->user->getRoles() ) ;
 	}
 
-	// Add entitlement tests for user
-	// Create an authorizer wihch takes care of CONFLICT and INDEFINITE 
-	//      entitlement cases
 	// Populate entitlements from the database
 	// Write test cases for checking end to end authorization
 	// Save user in memcache

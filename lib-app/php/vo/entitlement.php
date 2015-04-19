@@ -133,6 +133,7 @@ class Operation {
 
 	private $forbiddenFlag ;
 	private $opName ;
+	private $access ;
 	private $logger ;
 
 	function __construct( $fromInside=0 ) {
@@ -161,21 +162,23 @@ class Operation {
 
 		if( sizeof( $components ) == 1 ) {
 
+			$this->access        = self::OP_ACCESS ;
 			$this->forbiddenFlag = false ;
-			$this->opName        = $components[0] ;
+			$this->opName        = trim( $components[0] ) ;
 		}
 		else if( sizeof( $components ) == 2 ) {
 
-			$this->opName = $components[1] ;
-			if( !( $components[0] == self::OP_ACCESS || 
-				   $components[0] == self::OP_FORBID ) ) {
+			$this->access = trim( $components[0] ) ;
+			$this->opName = trim( $components[1] ) ;
+			if( !( $this->access == self::OP_ACCESS || 
+				   $this->access == self::OP_FORBID ) ) {
 
 				throw new EntitlementException( 
 					          EntitlementException::INVALID_ENTITLEMENT_PATTERN,
 					          "Access format in '$this->access' is invalid.") ;
 			}
-			$this->forbiddenFlag = 
-			              ( $components[0] == self::OP_FORBID ) ? true : false ;
+			$this->forbiddenFlag = ( $this->access == self::OP_FORBID ) ? 
+			                       true : false ;
 		}
 		else {
 			throw new EntitlementException( 
@@ -354,16 +357,20 @@ class Entitlement {
 
 	function addPrivilege( $operation ) {
 
+		$opObj = NULL ;
 		if( $operation instanceof Operation ) {
-			array_push( $this->privileges, $operation ) ;
+			$opObj = $operation ;
 		}
 		else if( is_string( $operation ) ) {
-			array_push( $this->privileges, 
-				        Operation::fromRawOp( $operation ) ) ;
+			$opObj = Operation::fromRawOp( $operation ) ;
 		}
 		else {
 			throw new Exception( "operation is neither of type String or of " .
 				                 "type Operation" ) ;
+		}
+
+		if( !in_array( $opObj, $this->privileges ) ) {
+			array_push( $this->privileges, $opObj ) ;
 		}
 	}
 
@@ -371,14 +378,18 @@ class Entitlement {
 
 		if( !$this->canChildCauseInfiniteRecursion( $entitlement ) ) {
 
-			array_push( $this->childEntitlements, $entitlement ) ;
-			$entitlement->setParent( $this ) ;
-			return true ;
+			if( !in_array( $entitlement, $this->childEntitlements ) ) {
+				array_push( $this->childEntitlements, $entitlement ) ;
+				$entitlement->setParent( $this ) ;
+				return true ;
+			}
+			else {
+				$this->logger->debug( "Not adding entitlement. Already present" ) ;
+				return false ;				
+			}
 		}
 		else {
-
-			$this->logger->debug( "Not adding entitlement. " .
-				                  "Can cause infinite recursion." ) ;
+			$this->logger->debug( "Not adding entitlement. Will cause bad recursion" ) ;
 			return false ;
 		}
 	}
@@ -460,10 +471,10 @@ class Entitlement {
 	function toString( $indent="\t" ) {
 
 		$str = "" ;
-		$str .= $indent . "Entitlement [$this->alias]\n" ;
+		$str .= $indent . "-Entitlement [$this->alias]\n" ;
 
 		if( sizeof( $this->selectors ) > 0 ) {
-			$str .= $indent . "  Selectors\n" ;
+			$str .= $indent . "  -Selectors\n" ;
 			foreach( array( Selector::OP_INCLUDE, Selector::OP_INCLUDE_OVERRIDE,
 				            Selector::OP_EXCLUDE, Selector::OP_EXCLUDE_OVERRIDE ) 
 				     as $opType ) {
@@ -475,15 +486,15 @@ class Entitlement {
 			}
 		}
 
-		if( sizeof( $this->accessPrivileges->getPrivileges() ) > 0 ) {
-			$str .= $indent . "  Permitted operations\n" ;
-			foreach( $this->accessPrivileges->getPrivileges() as $op ) {
+		if( sizeof( $this->privileges ) > 0 ) {
+			$str .= $indent . "  -Permitted operations\n" ;
+			foreach( $this->privileges as $op ) {
 				$str .= $indent . "    $op\n" ;
 			}
 		}
 
 		if( sizeof( $this->childEntitlements ) > 0 ) {
-			$str .= $indent . "  Child entitlements\n" ;
+			$str .= $indent . "  -Child entitlements\n" ;
 			foreach( $this->childEntitlements as $childEntitlement ) {
 				$str .= $indent . "  " . $childEntitlement->toString( $indent . "\t" ) ;
 			}

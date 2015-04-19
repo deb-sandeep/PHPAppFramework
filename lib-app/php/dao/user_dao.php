@@ -1,6 +1,11 @@
 <?php
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/dao/abstract_dao.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/vo/entitlement.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/utils/general_utils.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/utils/string_utils.php" ) ;
+
+use sandy\phpfw\entitlement as ent ;
 
 class UserDAOImpl extends AbstractDAO {
 
@@ -147,8 +152,159 @@ QUERY;
 		}
 	}
 
-	function getUserEntitlements( $userName, $roles=NULL ) {
-		// TODO
+	function getEntitlementsForUser( $userName ) {
+		
+		$this->logger->debug( "Getting entitlements for user $userName" ) ;
+		
+		$ent = new ent\Entitlement( "Entitlement for [$userName]" ) ;
+
+		$roles = $this->getUserRoles( $userName ) ;
+		foreach( $roles as $role ) {
+			$this->loadRawEntitlementsForEntity( $ent, 'ROLE', $role ) ;
+		}
+
+		$this->loadRawEntitlementsForEntity( $ent, 'USER', $userName ) ;
+
+		return $ent ;
+	}
+
+	private function loadRawEntitlementsForEntity( &$ent, $entityType, $entityName ) {
+
+		$this->logger->debug( "Loading raw entitlements for $entityType $entityName" ) ;
+
+		$query = <<< QUERY
+select selector_type, selector_value, permissible_ops 
+from user.entity_entitlement
+where
+	entity_type = '$entityType' and
+	entity_name = '$entityName' and
+	entitlement_type = 'RAW'
+QUERY;
+
+		$result  = parent::executeSelect( $query, 0 ) ;
+
+	    while( $row = $result->fetch_array() ) {
+
+	    	$selectorType    = $row[ "selector_type"   ] ;
+	    	$selectorValue   = trim( $row[ "selector_value"  ] ) ;
+	    	$permissibleOps  = explode( ",", $row[ "permissible_ops" ] ) ;
+
+	    	if( $selectorType == 'RAW' ) {
+	    		$this->loadRawEntitlementsForRawSelector
+	    		                     ( $ent, $selectorValue, $permissibleOps ) ;
+	    	}
+	    	else if( $selectorType == 'SELECTOR_ALIAS' ) {
+				$this->loadRawEntitlementsForSelectorAlias
+					                 ( $ent, $selectorValue, $permissibleOps ) ;
+	    	}
+	    }
+	}
+
+	private function loadRawEntitlementsForRawSelector
+	                                ( &$ent, $selectorValue, $permissibleOps ) {
+		
+		if( StringUtils::isEmptyOrNull( $selectorValue ) ) {
+
+			foreach( $permissibleOps as $op ) {
+				if( !StringUtils::isEmptyOrNull( $op ) ) {
+					$ent->addPrivilege( $op ) ;
+				}
+			}
+		}	
+		else if( Utils::isArrayEmpty( $permissibleOps ) ) {
+
+			$ent->addRawSelector( $selectorValue ) ;
+		}
+		else {
+
+			$childEnt = new ent\Entitlement( "Child " . $ent->getAlias() ) ;
+			$this->loadRawEntitlementsForRawSelector( 
+				                             $childEnt, $selectorValue, NULL ) ;
+			$this->loadRawEntitlementsForRawSelector( 
+				                             $childEnt, NULL, $permissibleOps ) ;
+
+			$ent->addChildEntitlement( $childEnt ) ;
+		}
+	}
+
+	private function loadRawEntitlementsForSelectorAlias( &$ent, $selectorAlias, 
+		                                                  $permissibleOps ) {
+		
+		if( StringUtils::isEmptyOrNull( $selectorAlias ) ) {
+			throw new Exception( "Selector alias can't be null." ) ;
+		}
+
+		$nextLevelAliases     = array( $selectorAlias ) ;
+		$alreadyLoadedPaths   = array() ;
+		$alreadyLoadedAliases = array() ;
+
+		$this->collectAllPathsForSelectorAliases( $nextLevelAliases, 
+			                                      $alreadyLoadedPaths, 
+			                                      $alreadyLoadedAliases ) ;
+		
+		if( count( $permissibleOps ) == 0 || 
+		    ( count( $permissibleOps ) == 1 && 
+		      StringUtils::isEmptyOrNull( $permissibleOps[0] ) ) ) {
+
+			foreach( $alreadyLoadedPaths as $path ) {
+				$ent->addRawSelector( $path ) ;
+			}
+		}
+		else {
+			$childEnt = new ent\Entitlement( "Child " . $ent->getAlias() . "-" . 
+				                             $selectorAlias ) ;
+			foreach( $alreadyLoadedPaths as $path ) {
+				$childEnt->addRawSelector( $path ) ;
+			}
+
+			foreach( $permissibleOps as $op ) {
+				if( !StringUtils::isEmptyOrNull( $op ) ) {
+					$childEnt->addPrivilege( $op ) ;
+				}
+			}
+
+			$ent->addChildEntitlement( $childEnt ) ;
+		}
+	}
+
+	private function collectAllPathsForSelectorAliases( 
+		             $aliases, &$alreadyLoadedPaths, &$alreadyLoadedAliases ) {
+
+		$nextLevelAliases = array() ;
+		$query = "select selector_type, selector_value " .
+                 "from user.entitlement_selector_alias " .
+				 "where " .
+	             "alias_name in ( '" . implode( "','", $aliases ) . "' )" ;
+
+		$result  = parent::executeSelect( $query, 0 ) ;
+		foreach( $aliases as $alias ) {
+			array_push( $alreadyLoadedAliases, $alias ) ;
+		}
+
+	    while( $row = $result->fetch_array() ) {
+
+	    	$selectorType  = $row[ "selector_type"   ] ;
+	    	$selectorValue = trim( $row[ "selector_value"  ] ) ;
+
+	    	if( $selectorType == 'PATH' ) {
+	    		if( !in_array( $selectorValue, $alreadyLoadedPaths ) ) {
+	    			array_push( $alreadyLoadedPaths, $selectorValue ) ;
+	    		}
+	    	}
+	    	else if( $selectorType == 'SELECTOR_ALIAS' ) {
+	    		if( !in_array( $selectorValue, $alreadyLoadedAliases ) ) {
+	    			array_push( $nextLevelAliases, $selectorValue ) ;
+	    		}
+	    	}
+	    }
+
+	    if( count( $nextLevelAliases ) > 0 ) {
+	    	$this->logger->debug( "Collecting paths recursively for aliases " .
+	    	                      implode( ",", $nextLevelAliases ) ) ;
+	    	$this->collectAllPathsForSelectorAliases( $nextLevelAliases,
+	    		                                      $alreadyLoadedPaths,
+	    		                                      $alreadyLoadedAliases ) ;
+	    }
 	}
 }
 

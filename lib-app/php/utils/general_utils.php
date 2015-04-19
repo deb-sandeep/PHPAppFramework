@@ -18,6 +18,15 @@ class Utils {
 
 		return $obj->{ $attributeName } ;
 	}
+
+	static function isArrayEmpty( $array ) {
+
+		return ( count( $array ) == 0 || 
+			     ( count( $array ) == 1 && 
+			       trim( $array[0] )  == "" 
+			     ) 
+			   ) ;
+	}
 }
 
 Utils::$logger = Logger::getLogger( "Utils" ) ;

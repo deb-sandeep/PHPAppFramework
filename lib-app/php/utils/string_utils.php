@@ -31,6 +31,12 @@ class StringUtils {
 		self::$logger->debug( "Match result    = $matchResult" ) ;
 		return $matchResult ;
 	}
+
+	static function isEmptyOrNull( $string ) {
+
+		if( is_null( $string ) || strlen( trim( $string ) ) == 0 ) return true ;
+		return false ;
+	}
 }
 
 StringUtils::$logger = Logger::getLogger( "StringUtils" ) ;
