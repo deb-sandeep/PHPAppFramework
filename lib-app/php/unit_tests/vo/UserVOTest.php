@@ -2,6 +2,8 @@
 
 require_once( "../vo/user.php" ) ;
 
+use sandy\phpfw\entitlement as ent ;
+
 class UserVOTest extends PHPUnit_Framework_TestCase {
 
 	private $logger ;
@@ -56,56 +58,40 @@ class UserVOTest extends PHPUnit_Framework_TestCase {
 		$this->assertContains( "Class-VII-Student", $this->user->getRoles() ) ;
 	}
 
-	public function testAddEntitlements() {
+	// Add entitlement tests for user
+	// Create an authorizer wihch takes care of CONFLICT and INDEFINITE 
+	//      entitlement cases
+	// Populate entitlements from the database
+	// Write test cases for checking end to end authorization
+	// Save user in memcache
+	// Run ene to end browser scenario including page authorization failures
 
-		$this->user->addEntitlement( "+::page:/admin/profile*.php" ) ;
-		$this->user->addEntitlement( "+::page:/billing/**" ) ;
-		$this->user->addEntitlement( "+::chapter:Chapter" ) ;
-		$this->user->addEntitlement( "-::page:/admin/php/**" ) ;
+	public function testUserEntitlements() {
 
-		$this->user->addEntitlement( "(+)::page:/admin/profile_su.php" ) ;
-		$this->user->addEntitlement( "(-)::page:/admin/php/vo/**" ) ;
+		$entChild1 = new ent\Entitlement( "Child1" ) ;
+		$entChild1->addRawSelector( "+:property:test_app/**" ) ;
+		$entChild1->addRawSelector( "-:property:test_app/exclude_props/**" ) ;
+		$entChild1->addPrivilege( "READ" ) ;
+		$entChild1->addPrivilege( "WRITE" ) ;
 
-		$includeEntsPage     = $this->user->getInclusionEntitlements( "page" ) ;
-		$excludeEntsPage     = $this->user->getExclusionEntitlements( "page" ) ;
-		$includeEntsChapter  = $this->user->getInclusionEntitlements( "chapter" ) ;
-		$includeOverrideEnts = $this->user->getInclusionOverrideEntitlements( "page" ) ;
-		$excludeOverrideEnts = $this->user->getExclusionOverrideEntitlements( "page" ) ;
+		$entROW = new ent\Entitlement( "row" ) ;
+		$entROW->addRawSelector( "+  :property:**" ) ;
+		$entROW->addRawSelector( "-  :property:test_app/**" ) ;
+		$entROW->addRawSelector( "(-):property:test_app/exclude_props/**" ) ;
+		$entROW->addPrivilege( "READ" ) ;
 
-		$this->assertCount( 2, $includeEntsPage ) ;
-		$this->assertTrue( $this->isEntitlementPresent( 
-						   new Entitlement( "+::page:/admin/profile*.php" ), 
-						   $includeEntsPage ) ) ;
-		$this->assertTrue( $this->isEntitlementPresent( 
-			               new Entitlement( "+::page:/billing/**" ), 
-			               $includeEntsPage ) ) ;
+		$this->user->addEntitlement( $entChild1 ) ;
+		$this->user->addEntitlement( $entROW ) ;
 
-		$this->assertCount( 1, $excludeEntsPage ) ;
-		$this->assertTrue( $this->isEntitlementPresent( 
-			               new Entitlement( "-::page:/admin/php/**" ), 
-			               $excludeEntsPage ) ) ;
+		$ent = $this->user->getEntitlement() ;
 
-		$this->assertCount( 1, $includeEntsChapter ) ;
-		$this->assertTrue( $this->isEntitlementPresent( 
-			               new Entitlement( "+::chapter:Chapter" ), 
-			               $includeEntsChapter ) ) ;
+		$privs = $ent->computeAccessPrivilege( "property", "test_app/propA" ) ;
+		$this->assertTrue( $privs->isAccessible( "READ" ) ) ;
+		$this->assertTrue( $privs->isAccessible( "WRITE" ) ) ;
 
-		$this->assertCount( 1, $includeOverrideEnts ) ;
-		$this->assertTrue( $this->isEntitlementPresent( 
-			               new Entitlement( "(+)::page:/admin/profile_su.php" ), 
-			               $includeOverrideEnts ) ) ;
-
-		$this->assertCount( 1, $excludeOverrideEnts ) ;
-		$this->assertTrue( $this->isEntitlementPresent( 
-			               new Entitlement( "(-)::page:/admin/php/vo/**" ), 
-			               $excludeOverrideEnts ) ) ;
-	}
-
-	function isEntitlementPresent( $ent, $entArray ) {
-		foreach( $entArray as $entItem ) {
-			if( $ent == $entItem ) return true ;
-		}
-		return false ;
+		$privs = $ent->computeAccessPrivilege( "property", "test_app/exclude_props/propB" ) ;
+		$this->assertTrue( $privs->isAccessible( "READ" ) ) ;
+		$this->assertFalse( $privs->isAccessible( "WRITE" ) ) ;
 	}
 }
 ?>

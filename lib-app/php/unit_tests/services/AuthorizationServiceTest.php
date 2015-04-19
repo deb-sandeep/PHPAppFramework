@@ -4,6 +4,8 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/vo/user.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/utils/execution_context.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/services/authorization_service.php" ) ;
 
+use sandy\phpfw\entitlement as ent ;
+
 class AuthorizationServiceTest extends PHPUnit_Framework_TestCase {
 
 	private $logger ;
@@ -33,66 +35,36 @@ class AuthorizationServiceTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( Authorizer::isUserInRole( "student.*.7" ), "student.*.7" ) ;
 	}
 
-	function testSimpleAuthorizationPass() {
+	// It is assumed that universe has READ access via DEFAULT_ENTITLEMENTS
+	function testUserEntitlements() {
 
-		$this->user->addEntitlement( "+::page:**/php/**" ) ;
-		$guard = "page:/lib-app/php/services/profile.php" ;
+		$entChild1 = new ent\Entitlement( "Child1" ) ;
+		$entChild1->addRawSelector( "+:property:test_app/**" ) ;
+		$entChild1->addRawSelector( "-:property:test_app/exclude_props/**" ) ;
+		$entChild1->addPrivilege( "READ" ) ;
+		$entChild1->addPrivilege( "WRITE" ) ;
 
-		$this->assertNotNull( Authorizer::getAccessFlags( $guard ) ) ;
+		$this->user->addEntitlement( $entChild1 ) ;
+
+		$this->assertTrue( Authorizer::hasAccess( "property:test_app/propA", "READ" ) ) ;
+		$this->assertTrue( Authorizer::hasAccess( "property:test_app/propA", "WRITE" ) ) ;
+		$this->assertTrue( Authorizer::hasAccess( "property:other_app/A",    "READ" ) ) ;
 	}
 
-	function testSimpleAuthorizationFail() {
+	// Assumed that default conflict resolution strategy is deny (not allow)
+	function testUserEntitlementsConflict() {
 
-		$this->user->addEntitlement( "-::page:**/admin/**" ) ;
-		$guard = "page:/lib-app/php/services/admin/profile.php" ;
+		$ent1 = new ent\Entitlement( "E1" ) ;
+		$ent1->addRawSelector( "+:property:test_app/**" ) ;
+		$ent1->addPrivilege( "-:WRITE" ) ;
 
-		$this->assertNull( Authorizer::getAccessFlags( $guard ) ) ;
-	}
+		$ent2 = new ent\Entitlement( "E2" ) ;
+		$ent2->addRawSelector( "+:property:test_app/a/**" ) ;
+		$ent2->addPrivilege( "+:WRITE" ) ;
 
-	function testInclusionOverride() {
+		$this->user->addEntitlement( $ent1 ) ;
+		$this->user->addEntitlement( $ent2 ) ;
 
-		$this->user->addEntitlement( "+::page:**/php/**" ) ;
-		$this->user->addEntitlement( "(+)::page:**/profile.php" ) ;
-
-		// this guard should pass the **/php/** entitlement, but get 
-		// overridden by **/profile.php - net entitlement false.
-		$guard = "page:/lib-app/php/services/profile.php" ;
-
-		$this->assertNull( Authorizer::getAccessFlags( $guard ) ) ;
-	}
-
-	function testExclusionOverride() {
-
-		$this->user->addEntitlement( "+::page:/lib-app/php/**" ) ;
-		$this->user->addEntitlement( "-::page:**/php/**" ) ;
-		$this->user->addEntitlement( "(-)::page:**/profile.php" ) ;
-
-		// Inclusion filter will approve
-		// this guard should fail the **/php/** entitlement, but get 
-		// overridden by **/profile.php - net entitlement true.
-		$guard = "page:/lib-app/php/services/profile.php" ;
-
-		$this->assertNotNull( Authorizer::getAccessFlags( $guard ) ) ;
-	}
-
-	function testCheckReducedAccess() {
-
-		$this->user->addEntitlement( "+:w:page:/lib-app/php/**" ) ;
-		$guard = "page:/lib-app/php/services/profile.php" ;
-		
-		$this->assertFalse( Authorizer::isReadAuthorized( $guard ) ) ;
-		$this->assertTrue ( Authorizer::isWriteAuthorized( $guard ) ) ;
-		$this->assertFalse( Authorizer::isExecuteAuthorized( $guard ) ) ;
-	}
-
-	function testCheckReducedAccessOverride() {
-
-		$this->user->addEntitlement( "+   :  w  :page:/lib-app/php/**" ) ;
-		$this->user->addEntitlement( "(+) : ..+ :page:/lib-app/php/**/profile.php" ) ;
-		$guard = "page:/lib-app/php/services/profile.php" ;
-		
-		$this->assertFalse( Authorizer::isReadAuthorized( $guard ) ) ;
-		$this->assertTrue ( Authorizer::isWriteAuthorized( $guard ) ) ;
-		$this->assertTrue ( Authorizer::isExecuteAuthorized( $guard ) ) ;
+		$this->assertFalse( Authorizer::hasAccess( "property:test_app/a/propA", "WRITE" ) ) ;
 	}
 }

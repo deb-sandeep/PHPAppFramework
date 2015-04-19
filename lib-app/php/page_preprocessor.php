@@ -16,6 +16,7 @@ $interceptor_chain = array() ;
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/utils/server_context.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/utils/execution_context.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/utils/general_utils.php" ) ;
 
 // Load the initializers
 require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/" . "session_initializer.php" ) ;

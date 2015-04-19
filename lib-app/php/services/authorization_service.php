@@ -1,106 +1,116 @@
 <?php
 
+require_once( DOCUMENT_ROOT . "/lib-app/php/configs/default_entitlement_rules.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/utils/general_utils.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/utils/string_utils.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/services/service.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/vo/user.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/utils/execution_context.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/utils/string_utils.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/utils/a12n_utils.php" ) ;
+
+use sandy\phpfw\entitlement as ent ;
 
 class AuthorizationException extends Exception {
 } 
 
+class DefaultEntitlementRules {
+
+	public $resourceType ;
+	public $permissibleOps ;
+	public $indifferenceOps ;
+	public $conflictStrategy ;
+
+	function __construct( $resourceType, $configObj ) {
+
+		$this->resourceType = $resourceType ;
+		$this->indifferenceOps = array() ;
+
+		$this->permissibleOps = Utils::getAttributeValue( $configObj, 
+			                                         "permissible_ops", true ) ;
+
+		$indiffOps = Utils::getAttributeValue( $configObj, 
+			                                 "default_indifferent_ops", true ) ;
+		foreach( $indiffOps as $op ) {
+			array_push( $this->indifferenceOps, ent\Operation::fromRawOp( $op ) ) ;
+		}
+
+		$this->conflictStrategy = Utils::getAttributeValue( $configObj, 
+			                               "default_conflict_strategy", true ) ;
+	}	
+}
+
 class AuthorizationService {
 
 	private $logger ;
+	private $defaultEnitlementRules ;
 
-	function __construct() {
+	function __construct( $configJSONData ) {
 		$this->logger = Logger::getLogger( __CLASS__ ) ;
+		$this->defaultEnitlementRules = array() ;
+		$this->parseDefaultEntitlementRules( $configJSONData ) ;
+	}
+
+	private function parseDefaultEntitlementRules( $configJSONData ) {
+		
+		$appConfigs = json_decode( $configJSONData ) ;
+		if( json_last_error() != JSON_ERROR_NONE ) {
+			throw new Exception( "Entitlement default rules JSON format is " .
+				                 "incorrect. Please check." ) ;
+		}
+
+		foreach( $appConfigs as $resourceType => $configObj ) {
+			$this->defaultEnitlementRules[ $resourceType ] = 
+			         new DefaultEntitlementRules( $resourceType, $configObj ) ;
+		}
 	}
 
 	function isUserInRole( $user, $rolePattern ) {
 
-		foreach( $user->getRoles() as $userRole ) {
-			if( StringUtils::matchSimplePattern( $rolePattern, $userRole ) ) {
+		foreach( $user->getRoles() as $role ) {
+			if( StringUtils::matchSimplePattern( $rolePattern, $role ) ) {
 				return true ;
 			}
 		}
 		return false ;
 	}
 
-	function getAccessFlags( $user, $entitlementGuard ) {
+	function hasAccess( $user, $guard, $opName ) {
 
-		$this->logger->debug( "Checking user entitlement for '" . $user->getUserName() .
-			                  "' against guard $entitlementGuard" ) ;
-
-		$accessFlags = NULL ;
-		$guardComponents = A12NUtils::getGuardComponents( $entitlementGuard ) ;
-		$guardType  = $guardComponents[0] ;
-		$guardPath  = $guardComponents[1] ;
-
-		$inclEnts          = $user->getInclusionEntitlements( $guardType ) ;
-		$inclOverridesEnts = $user->getInclusionOverrideEntitlements( $guardType ) ;
-		$exclEnts          = $user->getExclusionEntitlements( $guardType ) ;
-		$exclOverrideEnts  = $user->getExclusionOverrideEntitlements( $guardType ) ;
-
-		$this->logger->debug( "\tGuard type = $guardType" ) ;
-		$this->logger->debug( "\tGuard path = $guardPath" ) ;
-		$this->logger->debug( "\tNumber of inclusion entitlements          = " . 
-			                  sizeof( $inclEnts ) ) ;
-		$this->logger->debug( "\tNumber of inclusion override entitlements = " . 
-			                  sizeof( $inclOverridesEnts ) ) ;
-		$this->logger->debug( "\tNumber of exclusion entitlements          = " . 
-			                  sizeof( $exclEnts ) ) ;
-		$this->logger->debug( "\tNumber of exclusion override entitlements = " . 
-			                  sizeof( $exclOverrideEnts ) ) ;
-
-		$this->logger->debug( "Verifying against inclusion entitlements." ) ;
-		$accessFlags = $this->matchEntitlements( $guardPath, $inclEnts ) ;
-		if( $accessFlags == NULL || !$accessFlags->hasPrivileges() ) {
-			$this->logger->debug( "No inclusion filter match. Not entitled." ) ;
-			return NULL ;
+		$guardComponents = explode( ":", $guard ) ;
+		if( count( $guardComponents ) != 2 ) {
+			throw new AuthorizationException( "Guard $guard - wrong format." ) ;
 		}
-		else {
-			$inclOverrideMatchAccessFlag = $this->matchEntitlements( 
-				                              $guardPath, $inclOverridesEnts ) ;
-			if( $inclOverrideMatchAccessFlag != NULL ) {
-				$this->logger->debug( "Inclusion override filter match." ) ;
-				$accessFlags->superimpose( $inclOverrideMatchAccessFlag ) ;
-				if( !$accessFlags->hasPrivileges() ) {
-					$this->logger->debug( "All privs revoked by inclusion override." ) ;
-					return NULL ;
+		$resType = trim( $guardComponents[0] ) ;
+		$path    = trim( $guardComponents[1] ) ;
+
+		$entitlement      = $user->getEntitlement() ;
+		$accessPrivileges = $entitlement->computeAccessPrivilege( $resType, $path ) ;
+		$privilege        = $accessPrivileges->getAccessPrivilege( $opName ) ;	
+
+		if( $privilege == ent\AccessPrivilege::AP_INDEFINITE ) {
+
+			$defaultRules = $this->defaultEnitlementRules[ $resType ] ;
+			foreach( $defaultRules->indifferenceOps as $op ) {
+				if( $op->getOpName() == $opName ) {
+					return !$op->isForbidden() ;
 				}
-				$this->logger->debug( "Inclusion override changed access privs." ) ;
 			}
+			throw new Exception( "Indifference rules for resource $resourceType " .
+				                 " is not configured in the system." ) ;
 		}
+		else if( $privilege == ent\AccessPrivilege::AP_CONFLICT ) {
 
-		$this->logger->debug( "Verifying against exclusion entitlements." ) ;
-		if( $this->matchEntitlements( $guardPath, $exclEnts ) != NULL ) {
-			$this->logger->debug( "Exclusion entitlements match." ) ;
-
-			$this->logger->debug( "Verifying against exclusion overrides." ) ;
-			if( $this->matchEntitlements( $guardPath, $exclOverrideEnts ) != NULL ) {
-				$this->logger->debug( "Exclusion overrides match." ) ;
-				return $accessFlags ;
-			}
-			return NULL ;
+			$defaultRules = $this->defaultEnitlementRules[ $resType ] ;
+			return $defaultRules->conflictStrategy == "allow" ;
 		}
-		else {
-			return $accessFlags ;
+		else if( $privilege == ent\AccessPrivilege::AP_ACCESS ) {
+
+			return true ;
+		}
+		else if( $privilege == ent\AccessPrivilege::AP_FORBID ) {
+
+			return false ;
 		}
 	}
-
-	private function matchEntitlements( $guardPath, $entitlements ) {
-
-		$accessFlags = NULL ;
-		foreach( $entitlements as $entitlement ) {
-			$accessFlags = $entitlement->match( $guardPath ) ;
-			if( $accessFlags != NULL ) {
-				break ;
-			}
-		}
-		return $accessFlags ;
-	}
-
 }
 
 class Authorizer {
@@ -113,45 +123,13 @@ class Authorizer {
 						ExecutionContext::getCurrentUser(), $role ) ;
 	}
 
-	static function getAccessFlags( $entitlementGuard ) {
-		return self::$service->getAccessFlags( 
-			           	ExecutionContext::getCurrentUser(), $entitlementGuard ) ;
-	}
-
-	static function isAuthorized( $entitlementGuard ) {
-		return !is_null( self::getAccessFlags( $entitlementGuard ) ) ;
-	}
-
-	static function isReadAuthorized( $entitlementGuard ) {
-		$accessFlags = self::getAccessFlags( $entitlementGuard ) ;
-		if( !is_null( $accessFlags ) ) {
-			return $accessFlags->isReadPermitted() ;
-		}
-		return false ;
-	}
-
-	static function isWriteAuthorized( $entitlementGuard ) {
-		$accessFlags = self::getAccessFlags( $entitlementGuard ) ;
-		if( !is_null( $accessFlags ) ) {
-			return $accessFlags->isWritePermitted() ;
-		}
-		return false ;
-	}
-
-	static function isExecuteAuthorized( $entitlementGuard ) {
-		$accessFlags = self::getAccessFlags( $entitlementGuard ) ;
-		if( !is_null( $accessFlags ) ) {
-			return $accessFlags->isExecutePermitted() ;
-		}
-		return false ;
-	}
-
-	static function checkAuthorized( $entitlementGuard ) {
-		throw new AuthorizationException() ;
+	static function hasAccess( $guard, $opName ) {
+		return self::$service->hasAccess( 
+			            ExecutionContext::getCurrentUser(), $guard, $opName ) ;
 	}
 }
 
 Authorizer::$logger  = Logger::getLogger( "Authorizer" ) ;
-Authorizer::$service = new AuthorizationService() ;
+Authorizer::$service = new AuthorizationService( $DEFAULT_ENTITLEMENTS ) ;
 
 ?>

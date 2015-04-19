@@ -2,35 +2,7 @@
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/dao/abstract_dao.php" ) ;
 
-interface UserDAO {
-
-	// --------------- AUTHENTICATION FUNCTIONS --------------------------------
-	/** @return NULL if a user with the given name is not found. */
-	function getUserPassword( $userName ) ;
-
-	function saveNewAuthenticationToken( $userName, $token, $tokenType ) ;
-
-	function deleteAuthenticationToken( $token ) ;
-
-	/** @return NULL if the given token is not found in the system. */
-	function getUserNameForToken( $token ) ;
-
-	function updateLastAccessTime( $userName, $authToken ) ;
-
-	function removeObsoleteTokens() ;
-
-	// --------------- USER PREFERENCE FUNCTIONS -------------------------------
-	function loadUserPreferences( $userName ) ;
-
-	function saveUserPreference( $userName, $key, $value ) ;
-
-	// --------------- USER ENTITLEMENT FUNCTIONS ------------------------------
-	function getUserRoles( $userName ) ;
-
-	function getUserEntitlements( $userName, $roles=NULL ) ;
-}
-
-class UserDAOImpl extends AbstractDAO implements UserDAO {
+class UserDAOImpl extends AbstractDAO {
 
 	private $logger ;
 
@@ -139,7 +111,7 @@ QUERY;
 		$query = <<< QUERY
 select distinct role_name from user.user_roles 
 where user_name = '$userName'
-QUERY ;
+QUERY;
 
 		$roles = parent::getResultAsArray( $query ) ;
 		if( count( $roles ) > 0 ) {
@@ -155,7 +127,7 @@ QUERY ;
 		$query = <<< QUERY
 select distinct child_role from user.roles
 where name in ( '$roleCSV' ) and child_role is not NULL
-QUERY ;
+QUERY;
 
 		$childRoles = parent::getResultAsArray( $query ) ;
 
@@ -178,7 +150,6 @@ QUERY ;
 	function getUserEntitlements( $userName, $roles=NULL ) {
 		// TODO
 	}
-
 }
 
 ?>

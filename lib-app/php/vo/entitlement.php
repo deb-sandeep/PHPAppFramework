@@ -49,13 +49,13 @@ class Selector {
 
 		if( sizeof( $selComponents ) != self::PATTERN_NUM_PARTS ) {
 			throw new EntitlementException( 
-				   EntitlementException::INVALID_ENTITLEMENT_PATTERN,
-				   "Selector string '$selectorString' does not have all parts.") ;
+				 EntitlementException::INVALID_ENTITLEMENT_PATTERN,
+				 "Selector string '$selectorString' does not have all parts.") ;
 		}
 
-		$this->parseOpType( trim( $selComponents[0] ) ) ;
+		$this->opType       = $this->parseOpType( trim( $selComponents[0] ) ) ;
 		$this->resourceType = trim( $selComponents[1] ) ;
-		$this->pattern = trim( $selComponents[2] ) ;
+		$this->pattern      = trim( $selComponents[2] ) ;
 	}
 
 	private function parseOpType( $type ) {
@@ -65,37 +65,37 @@ class Selector {
 			   ( $type == self::OP_INCLUDE_OVERRIDE ) ||
 			   ( $type == self::OP_EXCLUDE_OVERRIDE ) ) ) {
 
-			throw new EntitlementException( EntitlementException::INVALID_ENTITLEMENT_PATTERN,
+			throw new EntitlementException(
+                            EntitlementException::INVALID_ENTITLEMENT_PATTERN,
 				            $type . " is not a valid selector operation." ) ;
 		}
-		$this->opType = $type ;
+		return $type ;
 	}
 
-	static function compareTo( $aSelector, $anotherSelector ) {
+	static function compareTo( $selA, $selB ) {
 
-		if( $aSelector->getResourceType() != $anotherSelector->getResourceType() ) {
-			return strcmp( $aSelector->getResourceType(), 
-				           $anotherSelector->getResourceType() ) ;
+		if( $selA->getResourceType() != $selB->getResourceType() ) {
+			return strcmp( $selA->getResourceType(), $selB->getResourceType() ) ;
 		}
 		else {
-			if( $aSelector->getOpType() == $anotherSelector->getOpType() ) {
-				return strcmp( $aSelector->getPattern(), 
-					           $anotherSelector->getPattern() ) ;
+			if( $selA->getOpType() == $selB->getOpType() ) {
+				return strcmp( $selA->getPattern(), $selB->getPattern() ) ;
 			}
 			else {
-				return self::getOpPriorityForDisplay( $aSelector->getOpType() ) -
-					   self::getOpPriorityForDisplay( $anotherSelector->getOpType() ) ;
+				return self::getOpPriorityForDisplay( $selA->getOpType() ) -
+					   self::getOpPriorityForDisplay( $selB->getOpType() ) ;
 			}
 		}
 		return 0 ;
 	}
 
 	static private function getOpPriorityForDisplay( $type ) {
+
 		switch( $type ) {
-			case Selector::OP_INCLUDE: return 1 ;
-			case Selector::OP_INCLUDE_OVERRIDE: return 2 ;
-			case Selector::OP_EXCLUDE: return 3 ;
-			case Selector::OP_EXCLUDE_OVERRIDE: return 4 ;
+			case Selector::OP_INCLUDE          : return 1 ;
+			case Selector::OP_INCLUDE_OVERRIDE : return 2 ;
+			case Selector::OP_EXCLUDE          : return 3 ;
+			case Selector::OP_EXCLUDE_OVERRIDE : return 4 ;
 		}
 		return 0 ;
 	}
@@ -131,7 +131,7 @@ class Operation {
 	const PATTERN_SEPARATOR = ":" ;
 	const MAGIC_NO = 3.421 ;
 
-	private $access ;
+	private $forbiddenFlag ;
 	private $opName ;
 	private $logger ;
 
@@ -148,9 +148,9 @@ class Operation {
 		return $op ;
 	}
 
-	static function fromAccessFlagAndOpName( $access, $opName ) {
+	static function fromAccessFlagAndOpName( $opName, $isForbidden=false ) {
 		$op = new Operation( self::MAGIC_NO ) ;
-		$op->access = ( $access ) ? Operation::OP_ACCESS : Operation::OP_FORBID ;
+		$op->forbiddenFlag = $isForbidden ;
 		$op->opName = $opName ;
 		return $op ;		
 	}
@@ -160,39 +160,46 @@ class Operation {
 		$components = explode( self::PATTERN_SEPARATOR, $rawOp ) ;
 
 		if( sizeof( $components ) == 1 ) {
-			$this->access = self::OP_ACCESS ;
-			$this->opName = $components[0] ;
+
+			$this->forbiddenFlag = false ;
+			$this->opName        = $components[0] ;
 		}
 		else if( sizeof( $components ) == 2 ) {
-			$this->access = $components[0] ;
-			$this->opName = $components[1] ;
-			if( !( $this->access == self::OP_ACCESS || 
-				   $this->access == self::OP_FORBID ) ) {
 
-				throw new EntitlementException( EntitlementException::INVALID_ENTITLEMENT_PATTERN,
-					   "Access format in '$this->access' is invalid.") ;
+			$this->opName = $components[1] ;
+			if( !( $components[0] == self::OP_ACCESS || 
+				   $components[0] == self::OP_FORBID ) ) {
+
+				throw new EntitlementException( 
+					          EntitlementException::INVALID_ENTITLEMENT_PATTERN,
+					          "Access format in '$this->access' is invalid.") ;
 			}
+			$this->forbiddenFlag = 
+			              ( $components[0] == self::OP_FORBID ) ? true : false ;
 		}
 		else {
-			throw new EntitlementException( EntitlementException::INVALID_ENTITLEMENT_PATTERN,
-				                  "Access format '$this->access' is invalid.") ;
+			throw new EntitlementException( 
+				              EntitlementException::INVALID_ENTITLEMENT_PATTERN,
+				              "Access format '$this->access' is invalid.") ;
 		}
 	}
 
-	function isForbiddenOp() {
-		return $this->access == self::OP_FORBID ;
-	}
+	function isForbidden() { return $this->forbiddenFlag ; }
 
-	function getOpName() {
-		return $this->opName ;
-	}
+	function getOpName() { return $this->opName ; }
 
 	function __toString() {
-		return str_pad( $this->access, 3, " ", STR_PAD_LEFT ) . ":" . $this->opName ;
+		return str_pad( $this->access, 3, " ", STR_PAD_LEFT ) . 
+		       ":" . $this->opName ;
 	}
 }
 
 class AccessPrivilege {
+
+	const AP_ACCESS     = "+" ;
+	const AP_FORBID     = "-" ;
+	const AP_INDEFINITE = "-" ;
+	const AP_CONFLICT   = "0" ;
 
 	private $opsMap ;
 	private $logger ;
@@ -202,51 +209,97 @@ class AccessPrivilege {
 		$this->opsMap = array() ;
 	}
 
-	function addPriviledge( $op ) {
+	function addRawPrivilege( $opString ) {
+		$this->addPrivilege( Operation::fromRawOp( $opString ) ) ;
+	}
 
-		$countContainer = &$this->getCountContainer( $op->getOpName() ) ;
-		if( $op->isForbiddenOp() ) {
-			$countContainer[0]-- ;
+	function addPrivilege( $op ) {
+
+		if( !($op instanceof Operation) ) {
+			throw new Exception( "Invalid argument. Is not of type Operation." ) ;
+		}
+
+		$existingCount = 0 ;
+		$opName = $op->getOpName() ;
+
+		if( array_key_exists( $opName, $this->opsMap ) ) {
+			$existingCount = $this->opsMap[ $opName ] ;
+		}
+
+		if( $op->isForbidden() ) {
+			$this->opsMap[ $opName ] = $existingCount - 1 ;
 		}
 		else {
-			$countContainer[1]++ ;
+			$this->opsMap[ $opName ] = $existingCount + 1 ;
 		}
 	}
 
-	function &getCountContainer( $opName ) {
+	function getAccessPrivilege( $opName ) {
 
-		$countContainer ;
-		if( !array_key_exists( $opName, $this->opsMap ) ) {
-			$this->opsMap[ $opName ] = array( 0, 0 ) ;
+		$priv = self::AP_INDEFINITE ;
+		if( array_key_exists( $opName, $this->opsMap ) ) {
+			if( $this->opsMap[ $opName ] > 0 ) {
+				$priv = self::AP_ACCESS ;
+			}
+			else if( $this->opsMap[ $opName ] < 0 ) {
+				$priv = self::AP_FORBID ;
+			}
+			else {
+				$priv = self::AP_CONFLICT ;
+			}
 		}
-		return $this->opsMap[ $opName ] ;
+		return $priv ;
 	}
 
-	function hasAccess( $opName ) {
-		$countContainer = &$this->getCountContainer( $opName ) ;
-		$count = $countContainer[0] + $countContainer[1] ;
-		return ( $count > 0 ) ? true : false ;
+	function isForbidden( $opName ) { 
+		return $this->getAccessPrivilege( $opName ) == self::AP_FORBID ;
 	}
 
-	function getPrivileges() {
+	function isAccessible( $opName ) { 
+		return $this->getAccessPrivilege( $opName ) == self::AP_ACCESS ;
+	}
 
-		$ops = array() ;
-		foreach( $this->opsMap as $key => $countContainer ) {
+	function isIndefinite( $opName ) { 
+		return $this->getAccessPrivilege( $opName ) == self::AP_INDEFINITE ;
+	}
 
-			$hasAccess = ( $countContainer[0] + $countContainer[1] ) > 0 ;
-			$op = Operation::fromAccessFlagAndOpName( $hasAccess, $key ) ;
-			array_push( $ops, $op ) ;
+	function isConflict( $opName ) { 
+		return $this->getAccessPrivilege( $opName ) == self::AP_CONFLICT ;
+	}
+
+	function normalize() {
+
+		foreach( $this->opsMap as $opName => $count ) {
+			$existingCount = $this->opsMap[ $opName ] ;
+			if( $existingCount > 0 ) {
+				$this->opsMap[ $opName ] = 1 ;
+			}
+			else if( $existingCount < 0 ) {
+				$this->opsMap[ $opName ] = -1 ;
+			}
 		}
-		return $ops ;
 	}
 
 	function merge( $anotherAccessPrivilege ) {
 
 		if( $anotherAccessPrivilege != null ) {
-			foreach( $anotherAccessPrivilege->getPrivileges() as $op ) {
-				$this->addPriviledge( $op ) ;
+			foreach( $anotherAccessPrivilege->opsMap as $opName => $count ) {
+				$newCount = $count ;
+				if( array_key_exists( $opName, $this->opsMap ) ) {
+					$newCount += $this->opsMap[ $opName ] ;
+				}
+				$this->opsMap[ $opName ] = $newCount ;
 			}
 		}
+	}
+
+	function __toString() {
+
+		$str = "" ;
+		foreach( $this->opsMap as $opName => $count ) {
+			$str .= $this->getAccessPrivilege( $opName ) . ":" . $opName . "\n" ;
+		}
+		return $str ;
 	}
 }
 
@@ -254,12 +307,13 @@ class Entitlement {
 
 	private $alias ;
 	private $selectors ;
-	private $accessPrivileges ;
+	private $privileges ;
 	private $childEntitlements ;
 	private $parent ;
 	private $logger ;
 
 	function __construct( $alias=NULL ) {
+
 		$this->logger = \Logger::getLogger( __CLASS__ ) ;
 		$this->alias = $alias ;
 		$this->selectors = array(
@@ -268,9 +322,9 @@ class Entitlement {
 			Selector::OP_INCLUDE_OVERRIDE => array() ,
 			Selector::OP_EXCLUDE_OVERRIDE => array() 
 		) ;
-		$this->accessPrivileges = new AccessPrivilege() ;
+		$this->privileges        = array() ;
 		$this->childEntitlements = array() ;
-		$this->parent = NULL ;
+		$this->parent            = NULL ;
 	}
 
 	function setParent( &$parent ) { $this->parent = $parent ; }
@@ -291,35 +345,40 @@ class Entitlement {
 		}
 	}
 
-	function addPermittedOp( $op ) {
-		if( is_array( $op ) ) {
-			foreach( $op as $o ) {
-				if( $o instanceof Operation ) {
-					$this->accessPrivileges->addPriviledge( $o ) ;
-				}
-				else {
-					$this->accessPrivileges->addPriviledge( Operation::fromRawOp( $o ) ) ;
-				}
-			}
+	function addPrivileges( $operations ) {
+
+		foreach( $operations as $operation ) {
+			$this->addPrivilege( $operation ) ;
+		}
+	}
+
+	function addPrivilege( $operation ) {
+
+		if( $operation instanceof Operation ) {
+			array_push( $this->privileges, $operation ) ;
+		}
+		else if( is_string( $operation ) ) {
+			array_push( $this->privileges, 
+				        Operation::fromRawOp( $operation ) ) ;
 		}
 		else {
-			if( $op instanceof Operation ) {
-				$this->accessPrivileges->addPriviledge( $op ) ;
-			}
-			else {
-				$this->accessPrivileges->addPriviledge( Operation::fromRawOp( $op ) ) ;
-			}
+			throw new Exception( "operation is neither of type String or of " .
+				                 "type Operation" ) ;
 		}
 	}
 
 	function addChildEntitlement( $entitlement ) {
+
 		if( !$this->canChildCauseInfiniteRecursion( $entitlement ) ) {
+
 			array_push( $this->childEntitlements, $entitlement ) ;
 			$entitlement->setParent( $this ) ;
 			return true ;
 		}
 		else {
-			$this->logger->debug( "Not adding entitlement. Can cause recursion." ) ;
+
+			$this->logger->debug( "Not adding entitlement. " .
+				                  "Can cause infinite recursion." ) ;
 			return false ;
 		}
 	}
@@ -338,27 +397,28 @@ class Entitlement {
 
 	function getAlias() { return $this->alias ; }
 	function getSelectors() { return $this->selectors ; }
-	function getAccessPrivileges() { return $this->accessPrivileges ; }
+	function getPrivileges() { return $ths->privileges ; } 
 
 	function computeAccessPrivilege( $resType, $path ) {
 
-		// $guardComponents = explode( Selector::PATTERN_SEPARATOR, $guard ) ;
-		// if( count( $guardComponents ) != 2 ) {
-		// 	throw new EntitlementException( EntitlementException::INVALID_ENTITLEMENT_GUARD,
-		// 		     "$guard is invalid. Either resource type or path is missing." ) ;
-		// }
-		// $resType = $guardComponents[0] ;
-		// $path    = $guardComponents[1] ;
-
 		$privilege = new AccessPrivilege() ;
-		foreach( $this->childEntitlements as $childEntitlement ) {
-			$privilege->merge( $childEntitlement->computeAccessPrivilege( $resType, $path ) ) ;
+
+		foreach( $this->childEntitlements as $childEnt ) {
+			$childPriv = $childEnt->computeAccessPrivilege( $resType, $path ) ;
+			$privilege->merge( $childPriv ) ;
 		}
-		$privilege->merge( $this->computeSelfPrivileges( $resType, $path ) ) ;
+		
+		if( $this->matchSelectors( $resType, $path ) ) {
+			foreach( $this->privileges as $op ) {
+				$privilege->addPrivilege( $op ) ;
+			}
+		}
+		$privilege->normalize() ;
+
 		return $privilege ;
 	}
 
-	private function computeSelfPrivileges( $resType, $path ) {
+	private function matchSelectors( $resType, $path ) {
 
 		$inclSels         = $this->selectors[ Selector::OP_INCLUDE ] ;
 		$inclOverrideSels = $this->selectors[ Selector::OP_INCLUDE_OVERRIDE ] ;
@@ -384,13 +444,8 @@ class Entitlement {
 				}
 			}
 		}
-		
-		if( $match ) {
-			$this->logger->debug( "Matched. Returning this.accessPrivileges" ) ;
-			return $this->accessPrivileges ;
-		}
-		$this->logger->debug( "Did not match selectors." ) ;
-		return null ;
+		$this->logger->debug( "We have a selector match" ) ;
+		return $match ;
 	}
 
 	private function match( $resType, $path, $selectorList ) {

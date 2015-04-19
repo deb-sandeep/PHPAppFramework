@@ -25,13 +25,13 @@ class ServerContext {
 
 	private static function parseConfiguration() {
 
-		self::$defaultLandingPage = self::getAttributeValue( self::$appConfigs,
+		self::$defaultLandingPage = Utils::getAttributeValue( self::$appConfigs,
 			                                self::KEY_LANDING_PAGE, true ) ;
 
-		self::$logoutPage = self::getAttributeValue( self::$appConfigs,
+		self::$logoutPage = Utils::getAttributeValue( self::$appConfigs,
 			                                self::KEY_LOGOUT_PAGE, true ) ;
 
-		self::$loginPage = self::getAttributeValue( self::$appConfigs,
+		self::$loginPage = Utils::getAttributeValue( self::$appConfigs,
 			                                self::KEY_LOGIN_PAGE, true ) ;
 	}
 
@@ -64,21 +64,6 @@ class ServerContext {
 
 	static function getLoginPage() {
 		return self::$loginPage ;
-	}
-
-	private static function getAttributeValue( $obj, $attributeName, 
-											   $mandatory=false,
-											   $defaultValue=NULL ) {
-
-		if( !property_exists( $obj, $attributeName ) ) {
-			if( $mandatory ) {
-				throw new Exception( "Mandatory attribute $attributeName not " .
-					                 "found in " . json_encode( $obj ) ) ;
-			}
-			return $defaultValue ;
-		}
-
-		return $obj->{ $attributeName } ;
 	}
 }
 

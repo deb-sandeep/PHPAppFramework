@@ -14,4 +14,11 @@
         <appender_ref ref="default" />
     </root>
 
+    <logger name="StringUtils" additivity="false">
+       <level value="warn" />
+    </logger>
+
+    <logger name="sandy\phpfw\entitlement\Entitlement" additivity="false">
+       <level value="warn" />
+    </logger>
 </configuration>

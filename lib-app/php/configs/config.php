@@ -34,4 +34,5 @@ $APP_CONFIG_DATA = <<< EOT
 }
 EOT;
 
+require_once( DOCUMENT_ROOT . "/lib-app/php/configs/default_entitlement_rules.php" ) ;
 ?>
