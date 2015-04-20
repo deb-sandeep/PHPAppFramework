@@ -1,6 +1,6 @@
 <?php
 
-require_once( "../api/api.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/api/api.php" ) ;
 
 class APIRequestResponseTest extends PHPUnit_Framework_TestCase {
 

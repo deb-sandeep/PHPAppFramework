@@ -86,10 +86,10 @@ abstract class AbstractDAO {
 	    return $singleValue ;
 	}
 
-	protected function getResultAsArray( $query ) {
+	protected function getResultAsArray( $query, $minSelectedRecordsToCheck=1 ) {
 
 	    $retVal = array() ;
-	    $result = $this->executeSelect( $query ) ;
+	    $result = $this->executeSelect( $query, $minSelectedRecordsToCheck ) ;
 	    while( $row = $result->fetch_array() ) {
 	    	array_push( $retVal, $row[0] ) ;
 	    }

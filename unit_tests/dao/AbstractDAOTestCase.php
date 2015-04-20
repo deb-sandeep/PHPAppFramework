@@ -11,7 +11,7 @@ class AbstractDAOTestCase extends PHPUnit_Framework_TestCase {
 	function setUp() {
 
 		global $dbConn ;
-		$dbConn = mysqli_connect( "localhost", "root", getenv( "DB_PASSWORD"), "study" ) ;
+		$dbConn = mysqli_connect( "localhost", "root", getenv( "DB_PASSWORD") ) ;
 		if( mysqli_connect_errno() ) {
 		    throw new Exception( "Failed to connect to MySQL: " . mysqli_connect_error() ) ;
 		}

@@ -161,9 +161,11 @@ QUERY;
 		$roles = $this->getUserRoles( $userName ) ;
 		foreach( $roles as $role ) {
 			$this->loadRawEntitlementsForEntity( $ent, 'ROLE', $role ) ;
+			$this->loadAliasEntitlementsForEntity( $ent, 'ROLE', $role ) ;
 		}
 
 		$this->loadRawEntitlementsForEntity( $ent, 'USER', $userName ) ;
+		$this->loadAliasEntitlementsForEntity( $ent, 'USER', $userName ) ;
 
 		return $ent ;
 	}
@@ -173,7 +175,7 @@ QUERY;
 		$this->logger->debug( "Loading raw entitlements for $entityType $entityName" ) ;
 
 		$query = <<< QUERY
-select selector_type, selector_value, permissible_ops 
+select selector_alias, permissible_ops 
 from user.entity_entitlement
 where
 	entity_type = '$entityType' and
@@ -185,25 +187,28 @@ QUERY;
 
 	    while( $row = $result->fetch_array() ) {
 
-	    	$selectorType    = $row[ "selector_type"   ] ;
-	    	$selectorValue   = trim( $row[ "selector_value"  ] ) ;
-	    	$permissibleOps  = explode( ",", $row[ "permissible_ops" ] ) ;
+	    	$selectorAlias  = trim( $row[ "selector_alias"  ] ) ;
+	    	$permissibleOps = explode( ",", $row[ "permissible_ops" ] ) ;
 
-	    	if( $selectorType == 'RAW' ) {
-	    		$this->loadRawEntitlementsForRawSelector
-	    		                     ( $ent, $selectorValue, $permissibleOps ) ;
-	    	}
-	    	else if( $selectorType == 'SELECTOR_ALIAS' ) {
-				$this->loadRawEntitlementsForSelectorAlias
-					                 ( $ent, $selectorValue, $permissibleOps ) ;
-	    	}
+			$this->loadRawEntitlementsForSelectorAlias
+				                 ( $ent, $selectorAlias, $permissibleOps ) ;
 	    }
 	}
 
-	private function loadRawEntitlementsForRawSelector
-	                                ( &$ent, $selectorValue, $permissibleOps ) {
+	private function loadRawEntitlementsForSelectorAlias( &$ent, $selectorAlias, 
+		                                                  $permissibleOps ) {
 		
-		if( StringUtils::isEmptyOrNull( $selectorValue ) ) {
+		if( StringUtils::isEmptyOrNull( $selectorAlias ) &&
+			Utils::isArrayEmpty( $permissibleOps ) ) {
+			throw new Exception( "Both permissible ops and selector alias " . 
+				                 "can't be null or empty" ) ;
+		}
+
+		$nextLevelAliases     = array( $selectorAlias ) ;
+		$alreadyLoadedPaths   = array() ;
+		$alreadyLoadedAliases = array() ;
+
+		if( StringUtils::isEmptyOrNull( $selectorAlias ) ) {
 
 			foreach( $permissibleOps as $op ) {
 				if( !StringUtils::isEmptyOrNull( $op ) ) {
@@ -211,59 +216,31 @@ QUERY;
 				}
 			}
 		}	
-		else if( Utils::isArrayEmpty( $permissibleOps ) ) {
-
-			$ent->addRawSelector( $selectorValue ) ;
-		}
 		else {
-
-			$childEnt = new ent\Entitlement( "Child " . $ent->getAlias() ) ;
-			$this->loadRawEntitlementsForRawSelector( 
-				                             $childEnt, $selectorValue, NULL ) ;
-			$this->loadRawEntitlementsForRawSelector( 
-				                             $childEnt, NULL, $permissibleOps ) ;
-
-			$ent->addChildEntitlement( $childEnt ) ;
-		}
-	}
-
-	private function loadRawEntitlementsForSelectorAlias( &$ent, $selectorAlias, 
-		                                                  $permissibleOps ) {
-		
-		if( StringUtils::isEmptyOrNull( $selectorAlias ) ) {
-			throw new Exception( "Selector alias can't be null." ) ;
-		}
-
-		$nextLevelAliases     = array( $selectorAlias ) ;
-		$alreadyLoadedPaths   = array() ;
-		$alreadyLoadedAliases = array() ;
-
-		$this->collectAllPathsForSelectorAliases( $nextLevelAliases, 
-			                                      $alreadyLoadedPaths, 
-			                                      $alreadyLoadedAliases ) ;
-		
-		if( count( $permissibleOps ) == 0 || 
-		    ( count( $permissibleOps ) == 1 && 
-		      StringUtils::isEmptyOrNull( $permissibleOps[0] ) ) ) {
-
-			foreach( $alreadyLoadedPaths as $path ) {
-				$ent->addRawSelector( $path ) ;
-			}
-		}
-		else {
-			$childEnt = new ent\Entitlement( "Child " . $ent->getAlias() . "-" . 
-				                             $selectorAlias ) ;
-			foreach( $alreadyLoadedPaths as $path ) {
-				$childEnt->addRawSelector( $path ) ;
-			}
-
-			foreach( $permissibleOps as $op ) {
-				if( !StringUtils::isEmptyOrNull( $op ) ) {
-					$childEnt->addPrivilege( $op ) ;
+			$this->collectAllPathsForSelectorAliases( $nextLevelAliases, 
+				                                      $alreadyLoadedPaths, 
+				                                      $alreadyLoadedAliases ) ;
+			
+			if( Utils::isArrayEmpty( $permissibleOps ) ) {
+				foreach( $alreadyLoadedPaths as $path ) {
+					$ent->addRawSelector( $path ) ;
 				}
 			}
+			else {
+				$childEnt = new ent\Entitlement( "Child " . $ent->getAlias() . "-" . 
+					                             $selectorAlias ) ;
+				foreach( $alreadyLoadedPaths as $path ) {
+					$childEnt->addRawSelector( $path ) ;
+				}
 
-			$ent->addChildEntitlement( $childEnt ) ;
+				foreach( $permissibleOps as $op ) {
+					if( !StringUtils::isEmptyOrNull( $op ) ) {
+						$childEnt->addPrivilege( $op ) ;
+					}
+				}
+
+				$ent->addChildEntitlement( $childEnt ) ;
+			}
 		}
 	}
 
@@ -304,6 +281,71 @@ QUERY;
 	    	$this->collectAllPathsForSelectorAliases( $nextLevelAliases,
 	    		                                      $alreadyLoadedPaths,
 	    		                                      $alreadyLoadedAliases ) ;
+	    }
+	}
+
+	private function loadAliasEntitlementsForEntity( &$ent, $entityType, $entityName ) {
+
+		$this->logger->debug( "Loading alias entitlements for $entityType $entityName" ) ;
+
+		$query = <<< QUERY
+select distinct entitlement_alias
+from user.entity_entitlement
+where 
+	entity_type = '$entityType' and
+    entity_name = '$entityName' and
+    entitlement_type = 'ENT_ALIAS' 
+QUERY;
+
+		$aliases  = parent::getResultAsArray( $query, 0 ) ;
+		foreach( $aliases as $entAlias ) {
+			$childEnt = $this->loadEntitlementAlias( $entAlias ) ;
+			$ent->addChildEntitlement( $childEnt ) ;
+		}
+	}
+
+	private function loadEntitlementAlias( $alias ) {
+		$ent = new ent\Entitlement( $alias ) ;
+		$this->loadRawValuesForEntitlementAlias( $ent, $alias ) ;
+		$this->loadChildEntitlementAliases( $ent, $alias ) ;
+		return $ent ;
+	}
+
+	private function loadChildEntitlementAliases( $ent, $alias ) {
+
+		$query = <<< QUERY
+select distinct child_entitlement_alias
+from user.entitlement_alias
+where 
+	alias_name = '$alias' and
+	entitlement_type = 'ENT_ALIAS'
+QUERY;
+
+		$childAliases = parent::getResultAsArray( $query, 0 ) ;
+		foreach( $childAliases as $childAlias ) {
+			$childEnt = $this->loadEntitlementAlias( $childAlias ) ;
+			$ent->addChildEntitlement( $childEnt ) ;
+		}
+	}
+
+	private function loadRawValuesForEntitlementAlias( $ent, $alias ) {
+
+		$query = <<< QUERY
+select selector_alias, permissible_ops
+from user.entitlement_alias
+where 
+	alias_name = '$alias' and
+	entitlement_type = 'RAW'
+QUERY;
+
+		$result = parent::executeSelect( $query, 0 ) ;
+	    while( $row = $result->fetch_array() ) {
+
+	    	$selectorAlias  = trim( $row[ "selector_alias"  ] ) ;
+	    	$permissibleOps = explode( ",", $row[ "permissible_ops" ] ) ;
+
+			$this->loadRawEntitlementsForSelectorAlias
+				                 ( $ent, $selectorAlias, $permissibleOps ) ;
 	    }
 	}
 }

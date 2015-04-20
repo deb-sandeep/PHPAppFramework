@@ -1,6 +1,6 @@
 <?php
 
-require_once( DOCUMENT_ROOT . "/lib-app/php/unit_tests/dao/AbstractDAOTestCase.php" ) ;
+require_once( DOCUMENT_ROOT . "/unit_tests/dao/AbstractDAOTestCase.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/dao/user_dao.php" ) ;
 
 class UserDAOTest extends AbstractDAOTestCase {
@@ -35,7 +35,7 @@ class UserDAOTest extends AbstractDAOTestCase {
 			$this->logger->debug( "Role - $role" ) ;
 		}	
 
-		$this->assertCount( 6, $roles ) ;
+		$this->assertGreaterThan( 6, count($roles) ) ;
 		$this->assertContains( "ut.role.0", $roles ) ;
 		$this->assertContains( "ut.role.1", $roles ) ;
 		$this->assertContains( "ut.role.1.1", $roles ) ;

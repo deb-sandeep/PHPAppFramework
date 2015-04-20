@@ -1,6 +1,6 @@
 <?php
 
-require_once( "../vo/user.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/vo/user.php" ) ;
 
 use sandy\phpfw\entitlement as ent ;
 
