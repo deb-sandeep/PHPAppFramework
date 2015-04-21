@@ -313,6 +313,7 @@ class Entitlement {
 	private $privileges ;
 	private $childEntitlements ;
 	private $parent ;
+	private $numSelectors = 0 ;
 	private $logger ;
 
 	function __construct( $alias=NULL ) {
@@ -342,6 +343,7 @@ class Entitlement {
 
 		$container = &$this->selectors[ $selector->getOpType() ] ;
 		if( !in_array( $selector, $container ) ) {
+			$this->numSelectors++ ;
 			array_push( $container, $selector ) ;
 			usort( $container, array( 'sandy\phpfw\entitlement\Selector', 
 				                      'compareTo' ) ) ;
@@ -468,12 +470,12 @@ class Entitlement {
 		return false ;
 	}
 
-	function toString( $indent="\t" ) {
+	function toString( $indent="    " ) {
 
 		$str = "" ;
 		$str .= $indent . "-Entitlement [$this->alias]\n" ;
 
-		if( sizeof( $this->selectors ) > 0 ) {
+		if( $this->numSelectors > 0 ) {
 			$str .= $indent . "  -Selectors\n" ;
 			foreach( array( Selector::OP_INCLUDE, Selector::OP_INCLUDE_OVERRIDE,
 				            Selector::OP_EXCLUDE, Selector::OP_EXCLUDE_OVERRIDE ) 
@@ -496,7 +498,7 @@ class Entitlement {
 		if( sizeof( $this->childEntitlements ) > 0 ) {
 			$str .= $indent . "  -Child entitlements\n" ;
 			foreach( $this->childEntitlements as $childEntitlement ) {
-				$str .= $indent . "  " . $childEntitlement->toString( $indent . "\t" ) ;
+				$str .= $childEntitlement->toString( $indent . "    " ) ;
 			}
 		}
 

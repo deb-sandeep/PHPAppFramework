@@ -2,6 +2,9 @@
 
 require_once( DOCUMENT_ROOT . "/unit_tests/dao/AbstractDAOTestCase.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/dao/user_dao.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/vo/entitlement.php" ) ;
+
+use sandy\phpfw\entitlement as ent ;
 
 class UserDAOTest extends AbstractDAOTestCase {
 
@@ -46,7 +49,13 @@ class UserDAOTest extends AbstractDAOTestCase {
 
 	function testLoadUserEntitlements() {
 		$ent = $this->userDAO->getEntitlementsForUser( 'UTUser' ) ;
-		$this->logger->debug( "" . $ent ) ;
+		// $this->logger->debug( "" . $ent ) ;
+		$ap = $ent->computeAccessPrivilege( "note", "jn/c7/history/l1/Akbar" ) ;
+		// $this->logger->debug( "" . $ap ) ;
+		$this->assertTrue( $ap->isAccessible( "READ" ) ) ;
+		$ap = $ent->computeAccessPrivilege( "note", "jn/c7/physics/l2/Heat") ;
+		// $this->logger->debug( "" . $ap ) ;
+		$this->assertFalse( $ap->isAccessible( "READ" ) ) ;
 	}
 }
 

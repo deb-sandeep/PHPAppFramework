@@ -5,7 +5,7 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/vo/user.php" ) ;
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/interceptor.php" ) ;
 
-class UserPreferenceInterceptor extends Interceptor {
+class UserContextInterceptor extends Interceptor {
 
 	private $logger ;
 
@@ -16,9 +16,10 @@ class UserPreferenceInterceptor extends Interceptor {
 
 	function intercept() {
 
+		$userName = ExecutionContext::getCurrentUserName() ;
+
 		$userDAO = new UserDAOImpl() ;
-		$user = ExecutionContext::getCurrentUser() ;
-		$userName = $user->getUserName() ;
+		$user = new User( $userName ) ;
 
 		$map = $userDAO->loadUserPreferences( $userName ) ;
 		foreach ($map as $key => $value) {
@@ -27,13 +28,15 @@ class UserPreferenceInterceptor extends Interceptor {
 		}
 
 		$roles = $userDAO->getUserRoles( $userName )	;
-		$entitlements = $userDAO->getUserEntitlements( $userName, $roles ) ;
-
 		$user->addRoles( $roles ) ;
-		$user->addEntitlements( $entitlements ) ;
+
+		$ent = $userDAO->getEntitlementsForUser( $userName ) ;
+		$user->setEntitlement( $ent ) ;
+
+		ExecutionContext::setCurrentUser( $user ) ;
 	}	
 }
 
-new UserPreferenceInterceptor() ;
+new UserContextInterceptor() ;
 
 ?>

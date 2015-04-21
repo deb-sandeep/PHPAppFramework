@@ -172,7 +172,8 @@ class WebAuthenticationInterceptor extends Interceptor {
 			$this->logger->debug( "Authentication token received = $this->authToken" ) ;
 			$this->userName = $this->authenticationService
 			                       ->validateAuthenticationToken( $this->authToken ) ;
-			ExecutionContext::setCurrentUser( $this->userName ) ;
+			ExecutionContext::setCurrentUserName( $this->userName  ) ;
+			ExecutionContext::setUniqueKey( md5( $this->authToken ) ) ;
 		}
 		catch( AuthenticationException $e ) {
 

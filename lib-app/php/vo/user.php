@@ -25,7 +25,7 @@ class User {
 		$this->userName    = $name ;
 		$this->preferences = array() ;
 		$this->roles       = array() ;
-		$this->entitlement = new ent\Entitlement( "Entitlement [$name]" ) ;
+		$this->entitlement = NULL ;
 	}
 
 	function getUserName() {
@@ -88,8 +88,8 @@ class User {
 		$this->entitlement->addPrivilege( $operation ) ;
 	}
 
-	function addEntitlement( $entitlement ) {
-		$this->entitlement->addChildEntitlement( $entitlement ) ;
+	function setEntitlement( $entitlement ) {
+		$this->entitlement = $entitlement ;
 	}
 }
 

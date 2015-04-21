@@ -6,7 +6,7 @@ abstract class Interceptor {
 
 	public function canInterceptRequest() {
 		
-		if( ExecutionContext::getCurrentUser() != NULL ) {
+		if( ExecutionContext::getCurrentUserName() != NULL ) {
 			return true ;
 		} 
 		return false ;
