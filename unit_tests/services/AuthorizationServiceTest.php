@@ -17,7 +17,7 @@ class AuthorizationServiceTest extends PHPUnit_Framework_TestCase {
 
 	protected function setUp() {
 
-		ExecutionContext::setCurrentUser( "Sandeep" ) ;
+		ExecutionContext::setCurrentUser( new User( "Sandeep" ) ) ;
 		$this->user = &ExecutionContext::getCurrentUser() ;
 	}
 
@@ -44,7 +44,7 @@ class AuthorizationServiceTest extends PHPUnit_Framework_TestCase {
 		$entChild1->addPrivilege( "READ" ) ;
 		$entChild1->addPrivilege( "WRITE" ) ;
 
-		$this->user->addEntitlement( $entChild1 ) ;
+		$this->user->setEntitlement( $entChild1 ) ;
 
 		$this->assertTrue( Authorizer::hasAccess( "property:test_app/propA", "READ" ) ) ;
 		$this->assertTrue( Authorizer::hasAccess( "property:test_app/propA", "WRITE" ) ) ;
@@ -62,8 +62,10 @@ class AuthorizationServiceTest extends PHPUnit_Framework_TestCase {
 		$ent2->addRawSelector( "+:property:test_app/a/**" ) ;
 		$ent2->addPrivilege( "+:WRITE" ) ;
 
-		$this->user->addEntitlement( $ent1 ) ;
-		$this->user->addEntitlement( $ent2 ) ;
+		$ent = new ent\Entitlement( "ROOT" ) ;
+		$ent->addChildEntitlement( $ent1 ) ;
+		$ent->addChildEntitlement( $ent2 ) ;
+		$this->user->setEntitlement( $ent ) ;
 
 		$this->assertFalse( Authorizer::hasAccess( "property:test_app/a/propA", "WRITE" ) ) ;
 	}

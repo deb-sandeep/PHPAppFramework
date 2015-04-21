@@ -127,7 +127,8 @@ class WebAuthenticationInterceptor extends Interceptor {
 			$this->clearRequestedPageDetailsInSession() ;
 			$this->saveDefaultAppPreference() ;
 			$this->setAuthenticationTokenCookie() ;
-			ExecutionContext::setCurrentUser( $this->userName ) ;
+			ExecutionContext::setCurrentUserName( $this->userName  ) ;
+			ExecutionContext::setUniqueKey( md5( $this->authToken ) ) ;
 		}
 		catch( AuthenticationException $e ) {
 
@@ -255,7 +256,8 @@ class APIAuthenticationInterceptor extends AuthenticationInterceptor {
 			                       ->validateAuthenticationToken( $this->authToken ) ;
 
 			$this->updateLastAccessTime() ;
-			ExecutionContext::setCurrentUser( $this->userName ) ;
+			ExecutionContext::setCurrentUserName( $this->userName  ) ;
+			ExecutionContext::setUniqueKey( md5( $this->authToken ) ) ;
 		}
 		catch( AuthenticationException $e ) {
 			$this->logger->error( "Invalid token. Message = " . $e ) ;

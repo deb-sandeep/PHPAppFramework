@@ -58,11 +58,6 @@ class UserVOTest extends PHPUnit_Framework_TestCase {
 		$this->assertContains( "Class-VII-Student", $this->user->getRoles() ) ;
 	}
 
-	// Populate entitlements from the database
-	// Write test cases for checking end to end authorization
-	// Save user in memcache
-	// Run ene to end browser scenario including page authorization failures
-
 	public function testUserEntitlements() {
 
 		$entChild1 = new ent\Entitlement( "Child1" ) ;
@@ -77,8 +72,11 @@ class UserVOTest extends PHPUnit_Framework_TestCase {
 		$entROW->addRawSelector( "(-):property:test_app/exclude_props/**" ) ;
 		$entROW->addPrivilege( "READ" ) ;
 
-		$this->user->addEntitlement( $entChild1 ) ;
-		$this->user->addEntitlement( $entROW ) ;
+		$ent = new ent\Entitlement( "Root" ) ;
+		$ent->addChildEntitlement( $entChild1 ) ;
+		$ent->addChildEntitlement( $entROW ) ;
+
+		$this->user->setEntitlement( $ent ) ;
 
 		$ent = $this->user->getEntitlement() ;
 
