@@ -1,11 +1,15 @@
-// version: 2014-06-26
+// version: 2015-04-12
     /**
     * o--------------------------------------------------------------------------------o
-    * | This file is part of the RGraph package. RGraph is Free Software, licensed     |
-    * | under the MIT license - so it's free to use for all purposes. If you want to   |
-    * | donate to help keep the project going then you can do so here:                 |
+    * | This file is part of the RGraph package - you can learn more at:               |
     * |                                                                                |
-    * |                             http://www.rgraph.net/donate                       |
+    * |                          http://www.rgraph.net                                 |
+    * |                                                                                |
+    * | This package is licensed under the Creative Commons BY-NC license. That means  |
+    * | that for non-commercial purposes it's free to use and for business use there's |
+    * | a 99 GBP per-company fee to pay. You can read the full license here:           |
+    * |                                                                                |
+    * |                      http://www.rgraph.net/license                             |
     * o--------------------------------------------------------------------------------o
     */
 
@@ -237,7 +241,7 @@
 
                 scale = {'min':min,'labels':[]}
                 var max_str = String(max);
-                
+
                 if (max_str.indexOf('e') > 0) {
                     var numdecimals = ma.abs(max_str.substring(max_str.indexOf('e') + 1));
                 } else {
@@ -623,7 +627,7 @@
         * This hides the tooltip that is showing IF it has the same canvas ID as
         * that which is being cleared
         */
-        if (RG.Registry.Get('chart.tooltip')) {
+        if (RG.Registry.Get('chart.tooltip') && obj.get('chart.tooltips.nohideonclear') !== true) {
             RG.HideTooltip(ca);
             //RG.Redraw();
         }
@@ -1206,37 +1210,84 @@
                 co.fillStyle = bgcolor;
                 co.fillRect(gutterLeft + 0.5, gutterTop + 0.5, ca.width - gutterLeft - gutterRight, ca.height - gutterTop - gutterBottom);
             }
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             /**
             * Draw horizontal background bars
             */
-            co.beginPath(); // Necessary?
-    
-            co.fillStyle   = prop['chart.background.barcolor1'];
-            co.strokeStyle = co.fillStyle;
-            height = (ca.height - gutterBottom);
-    
-            for (var i=gutterTop; i<height ; i+=80) {
-                co.fillRect(gutterLeft, i, ca.width - gutterLeft - gutterRight, ma.min(40, ca.height - gutterBottom - i) );
-            }
-    
-            co.fillStyle   = prop['chart.background.barcolor2'];
-            co.strokeStyle = co.fillStyle;
-            height = (ca.height - gutterBottom);
-    
-            for (var i= (40 + gutterTop); i<height; i+=80) {
-                co.fillRect(gutterLeft, i, ca.width - gutterLeft - gutterRight, i + 40 > (ca.height - gutterBottom) ? ca.height - (gutterBottom + i) : 40);
-            }
-            
-            //context.stroke();
+            var numbars   = (prop['chart.ylabels.count'] || 5);
+            var barHeight = (ca.height - gutterBottom - gutterTop) / numbars;
+
             co.beginPath();
+                co.fillStyle   = prop['chart.background.barcolor1'];
+                co.strokeStyle = co.fillStyle;
+                height = (ca.height - gutterBottom);
+
+                for (var i=0; i<numbars; i+=2) {
+                    co.rect(gutterLeft,
+                            (i * barHeight) + gutterTop,
+                            ca.width - gutterLeft - gutterRight,
+                            barHeight
+                            );
+                }
+            co.fill();
+
+
+
+            co.beginPath();
+                co.fillStyle   = prop['chart.background.barcolor2'];
+                co.strokeStyle = co.fillStyle;
         
-    
-    
-    
-    
-    
-    
+                for (var i=1; i<numbars; i+=2) {
+                    co.rect(gutterLeft,
+                            (i * barHeight) + gutterTop,
+                            ca.width - gutterLeft - gutterRight,
+                            barHeight
+                           );
+                }
+            
+            co.fill();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+
+
+
+
+
+
+
+
             // Draw the background grid
             if (prop['chart.background.grid']) {
 
@@ -1261,7 +1312,7 @@
                             }
     
                         // Align the vertical lines for the bar
-                        } else if (obj.type === 'bar' && prop['chart.labels'] && prop['chart.labels'].length) {
+                        } else if ( (obj.type === 'bar' || obj.type === 'scatter') && prop['chart.labels'] && prop['chart.labels'].length) {
                             obj.Set('chart.background.grid.autofit.numvlines', prop['chart.labels'].length);
                         }
                     }
@@ -1286,13 +1337,15 @@
                 if (prop['chart.background.grid.dotted'] && typeof co.setLineDash == 'function') {
                     co.setLineDash([1,2]);
                 }
+                
+                co.beginPath();
     
     
                 // Draw the horizontal lines
                 if (prop['chart.background.grid.hlines']) {
                     height = (ca.height - gutterBottom)
                     var hsize = prop['chart.background.grid.hsize'];
-                    for (y=gutterTop; y<height; y+=hsize) {
+                    for (y=gutterTop; y<=height; y+=hsize) {
                         context.moveTo(gutterLeft, ma.round(y));
                         context.lineTo(ca.width - gutterRight, ma.round(y));
                     }
@@ -1302,10 +1355,10 @@
                     // Draw the vertical lines
                     var width = (ca.width - gutterRight)
                     var vsize = prop['chart.background.grid.vsize'];
-                    for (x=gutterLeft; x<=width; x+=vsize) {
-                        co.moveTo(ma.round(x), gutterTop);
-                        co.lineTo(ma.round(x), ca.height - gutterBottom);
-                    }
+                        for (x=gutterLeft; x<=width; x+=vsize) {
+                            co.moveTo(ma.round(x), gutterTop);
+                            co.lineTo(ma.round(x), ca.height - gutterBottom);
+                        }
                 }
     
                 if (prop['chart.background.grid.border']) {
@@ -1314,17 +1367,25 @@
                     co.strokeRect(ma.round(gutterLeft), ma.round(gutterTop), ca.width - gutterLeft - gutterRight, ca.height - gutterTop - gutterBottom);
                 }
             }
-    
-            context.stroke();
-    
-            // Reset the line dash
-            if (typeof co.setLineDash == 'function') {
-                co.setLineDash([1,0]);
-            }
-    
+
+            co.stroke();
+
+
+
+            // Necessary to ensure the gris drawn before continuing
+            co.beginPath();
+            co.closePath();
+
+
+
             // If it's a bar and 3D variant, translate
             if (variant == '3d') {
                 co.restore();
+            }
+
+            // Reset the line dash
+            if (typeof co.setLineDash == 'function') {
+                co.setLineDash([1,0]);
             }
     
             // Draw the title if one is set
@@ -2192,7 +2253,10 @@
             if (typeof prop['chart.background.image.w'] === 'number') w  = prop['chart.background.image.w'];
             if (typeof prop['chart.background.image.h'] === 'number') h = prop['chart.background.image.h'];
 
-            co.drawImage(img,x,y,w, h);
+            var oldAlpha = co.globalAlpha;
+                co.globalAlpha = prop['chart.background.image.alpha'];
+                co.drawImage(img,x,y,w, h);
+            co.globalAlpha = oldAlpha;
         }
     };
 
@@ -3064,6 +3128,7 @@
     *          text             The text to show (REQUIRED)
     *          font             The font to use
     *          size             The size of the text (in pt)
+    *          italic           Whether the text should be italic or not
     *          bold             Whether the text shouldd be bold or not
     *          marker           Whether to show a marker that indicates the X/Y coordinates
     *          valign           The vertical alignment
@@ -3110,12 +3175,13 @@
         var size           = opt.size ? opt.size : 10;
         var size_pixels    = size * 1.5;
         var bold           = opt.bold;
+        var italic         = opt.italic;
         var halign         = opt.halign ? opt.halign : 'left';
         var valign         = opt.valign ? opt.valign : 'bottom';
         var tag            = typeof opt.tag == 'string' && opt.tag.length > 0 ? opt.tag : '';
         var marker         = opt.marker;
         var angle          = opt.angle || 0;
-        
+
         /**
         * Changed the name of boundingFill/boundingStroke - this allows you to still use those names
         */
@@ -3171,7 +3237,7 @@
         /**
         * Set the font
         */
-        co.font = (opt.bold ? 'bold ' : '') + size + 'pt ' + font;
+        co.font = (opt.italic ? 'italic ' : '') + (opt.bold ? 'bold ' : '') + size + 'pt ' + font;
 
 
 
@@ -3312,7 +3378,7 @@
                 co.fillText(text_multiline[i], x, y + (size_pixels * i));
             }
         } else {
-            co.fillText(text, x, y);
+            co.fillText(text, x + 0.5, y + 0.5);
         }
         
         
@@ -3588,7 +3654,7 @@
             // Reset the colors to their original values
             for (var j in obj.original_colors) {
                 if (typeof j === 'string' && j.substr(0,6) === 'chart.') {
-                    obj.properties[j] = RG.array_clone(obj.original_colors[j]);
+                    obj.properties[j] = RG.arrayClone(obj.original_colors[j]);
                 }
             }
         }
@@ -3870,6 +3936,7 @@
         co.shadowOffsetX = offsetx;
         co.shadowOffsetY = offsety;
         co.shadowBlur    = blur;
+
     };
 
 
@@ -4033,6 +4100,54 @@
         
         ca.__rgraph_aa_translated__ = false;
     };
+    
+    /**
+    * 
+    */
+    RG.att = function (ca)
+    {
+        (function (c)
+        {
+            var a = (c.getAttribute('data-l') === 'false') ? false : true,
+                o = c.__object__,
+                r = false;
+
+            if(!c.l && a){
+                var $c, $d, $l;
+
+                c.l = true;
+                $c  = $(c);
+                $d  = $('<div id="rgraphAttributionContainer_' + c.id + '" style="display: inline-block; position: relative"></div>');
+                $d[0].__rgraphCanvas__ = c;
+                
+                if (!c.resizing) {
+                    c.resizing={};
+                }
+                
+                c.resizing.container = $d[0];
+                $d[0].style.width    = ca.style.width;
+                $d[0].style.height   = ca.style.height;
+                $d[0].style.cssFloat = ca.style.cssFloat;
+
+                $l = $('<a id="rgraphAttribution_' + c.id + '" href="http://www.rgraph.net" style="right: 2px; bottom: 3px; position: absolute; outline: none; text-decoration: none; font-size: 10px; font-family: Arial;color: #666" target="_blank"></a>');
+                $l[0].container = $d[0];
+                $d[0].link = $l[0];
+                c.__link__ = $l[0];
+
+                $c.wrap($d);
+                $c.after($l);
+
+                RG.addCustomEventListener(o,'ondraw',function (o)
+                {
+                    if(o.get('resizable')) {
+                        $l.css({
+                            right: '35px'
+                        });
+                    }
+                });
+            }
+        })(ca);
+    }
 
 
 
@@ -4153,17 +4268,17 @@
 
             RG.cache[id] = {};
             RG.cache[id].object = obj;
-            RG.cache[id].canvas = $('<canvas></canvas>').attr({
-                                                               width: obj.canvas.width,
-                                                               height: obj.canvas.height,
-                                                               id: 'background_cached_canvas' + obj.canvas.id
-                                                              })
-                                                        //.appendTo($('body'))
-                                                        .get(0);
-//Add MSIE support
-if (typeof G_vmlCanvasManager === 'object' && G_vmlCanvasManager.initElement) {
-    G_vmlCanvasManager.initElement(RG.cache[id].canvas);
-}
+            RG.cache[id].canvas = jQuery('<canvas></canvas>').attr({
+                width: obj.canvas.width,
+                height: obj.canvas.height,
+                id: 'background_cached_canvas' + obj.canvas.id
+            })
+            .get(0);
+            
+            //Add MSIE support
+            if (typeof G_vmlCanvasManager === 'object' && G_vmlCanvasManager.initElement) {
+                G_vmlCanvasManager.initElement(RG.cache[id].canvas);
+            }
 
             RG.cache[id].context = RG.cache[id].canvas.getContext('2d');
             
@@ -4201,28 +4316,32 @@ if (typeof G_vmlCanvasManager === 'object' && G_vmlCanvasManager.initElement) {
     
             for (key in config) {
 
-                var value = config[key]
+                var isObject = false; // Default value
+                var isArray  = false; // Default value
+                var value    = config[key]
 
                 if (!RG.isNull(value) && value.constructor) {
-                    var isObject = value.constructor.toString().indexOf('Object') > 0;
-                    var isArray  = value.constructor.toString().indexOf('Array') > 0;
+                    isObject = value.constructor.toString().indexOf('Object') > 0;
+                    isArray  = value.constructor.toString().indexOf('Array') > 0;
                 }
 
                 if (isObject && !isArray) {
-                    settings[name + '.' + key] = true;
                     recurse(obj, config[key], name + '.' + key, settings);
 
-                } else if (isArray && value.length === 2 && typeof value[1] === 'object') {
-                    settings[name + '.' + key] = value[0];
-                    recurse(obj, value[1], name + '.' + key, settings);
+                //} else if (isArray && value.length === 2 && typeof value[1] === 'object' && value[1].constructor.toString().indexOf('Array') === -1) {
+                //    settings[name + '.' + key] = value[0];
+                //    recurse(obj, value[1], name + '.' + key, settings);
+                
+                } else if (key === 'self') {
+                    settings[name] = value;
 
                 } else {
                     settings[name + '.' + key] = value;
                 }
             }
-            
+
             return settings;
-        }
+        };
         
         /**
         * Go through the settings that we've been given
