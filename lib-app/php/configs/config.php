@@ -11,7 +11,7 @@ define( "LOG_FILE_PATH",        DOCUMENT_ROOT . "/var/log/php.log" ) ;
 define( "DB_HOST",              "localhost" ) ;
 define( "DB_USER",              "root" ) ;
 define( "DB_PASSWORD",          getenv( "DB_PASSWORD") ) ;
-define( "DB_SCHEMA",            "study" ) ;
+define( "DB_SCHEMA",            "" ) ;
 
 define( "ERROR_PAGE_INCLUDE_PATH", DOCUMENT_ROOT . "/lib-app/php/web/default_error_page.php" ) ;
 
