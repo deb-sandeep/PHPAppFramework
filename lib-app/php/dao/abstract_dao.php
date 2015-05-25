@@ -117,6 +117,13 @@ abstract class AbstractDAO {
 	    	}
 	    	array_push( $retVal, $rowObj ) ;
 	    }
+
+	    if( count( $retVal ) == 0 ) {
+	    	return null ;
+	    }
+	    else if( count( $retVal ) == 1 ) {
+	    	return $retVal[0] ;
+	    }
 	    return $retVal ;
 	}
 }
