@@ -10,6 +10,13 @@ $DEFAULT_ENTITLEMENTS = <<< EOT
 			"READ"
 		],
 		"default_conflict_strategy" : "deny"
+	},
+	"chapter" : {
+		"permissible_ops" : [
+			"NOTES", "FLASH_CARD", "CHAPTER_STATS"
+		],
+		"default_indifferent_ops" : [],
+		"default_conflict_strategy" : "deny"
 	}
 }
 EOT;

@@ -105,6 +105,20 @@ abstract class AbstractDAO {
 	    }
 	    return $retVal ;
 	}
+
+	protected function getResultAsAssociativeArray( $query, $colNames ) {
+
+		$retVal = array() ;
+	    $result = $this->executeSelect( $query ) ;
+	    while( $row = $result->fetch_array() ) {
+	    	$rowObj = array() ;
+	    	foreach( $colNames as $colName ) {
+	    		$rowObj[ $colName ] = $row[ $colName ] ;
+	    	}
+	    	array_push( $retVal, $rowObj ) ;
+	    }
+	    return $retVal ;
+	}
 }
 
 ?>

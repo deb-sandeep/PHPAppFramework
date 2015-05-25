@@ -19,15 +19,17 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/utils/execution_context.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/utils/general_utils.php" ) ;
 
 // Load the initializers
-require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/" . "session_initializer.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/" . "db_initializer.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/" . "server_initializer.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/session_initializer.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/db_initializer.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/server_initializer.php" ) ;
 
 // Load the interceptors
-require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "request_type_interceptor.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "authentication_interceptor.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "user_context_interceptor.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/" . "landing_page_interceptor.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/request_type_interceptor.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/authentication_interceptor.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/user_context_interceptor.php" ) ;
+require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/landing_page_interceptor.php" ) ;
+
+require_once( DOCUMENT_ROOT . "/lib-app/php/services/authorization_service.php" ) ;
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/api/api_utils.php" ) ;
 

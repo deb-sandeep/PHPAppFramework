@@ -49,13 +49,15 @@ class UserDAOTest extends AbstractDAOTestCase {
 
 	function testLoadUserEntitlements() {
 		$ent = $this->userDAO->getEntitlementsForUser( 'UTUser' ) ;
-		// $this->logger->debug( "" . $ent ) ;
-		$ap = $ent->computeAccessPrivilege( "note", "jn/c7/history/l1/Akbar" ) ;
-		// $this->logger->debug( "" . $ap ) ;
-		$this->assertTrue( $ap->isAccessible( "READ" ) ) ;
-		$ap = $ent->computeAccessPrivilege( "note", "jn/c7/physics/l2/Heat") ;
-		// $this->logger->debug( "" . $ap ) ;
-		$this->assertFalse( $ap->isAccessible( "READ" ) ) ;
+		$ap = $ent->computeAccessPrivilege( "chapter", "Class-8/History/12/0/The American Revolution" ) ;
+		$this->assertTrue( $ap->isAccessible( "NOTES" ) ) ;
+		$this->assertTrue( $ap->isAccessible( "FLASH_CARD" ) ) ;
+		$this->assertTrue( $ap->isAccessible( "CHAPTER_STATS" ) ) ;
+
+		$ap = $ent->computeAccessPrivilege( "chapter", "Class-8/History/12/0/The American Revolution" ) ;
+		$this->assertTrue( $ap->isAccessible( "NOTES" ) ) ;
+		$this->assertTrue( $ap->isAccessible( "FLASH_CARD" ) ) ;
+		$this->assertTrue( $ap->isAccessible( "CHAPTER_STATS" ) ) ;
 	}
 }
 

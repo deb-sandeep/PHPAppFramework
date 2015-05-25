@@ -1,7 +1,9 @@
 <?php
 
 require_once( $_SERVER['DOCUMENT_ROOT']."/lib-app/php/page_preprocessor.php" ) ;
+require_once( $_SERVER['DOCUMENT_ROOT']."/lib-app/php/api/api.php" ) ;
 require_once( $_SERVER['DOCUMENT_ROOT']."/lib-app/php/api/api_utils.php" ) ;
+require_once( $_SERVER['DOCUMENT_ROOT']."/lib-app/php/services/authorization_service.php" ) ;
 
 $apiRequest = NULL ;
 $apiResponse = NULL ;

@@ -19,8 +19,7 @@ class UserContextInterceptor extends Interceptor {
 
 		$userName = ExecutionContext::getCurrentUserName() ;
 		//$user = Cache::getUserObject( "USER_OBJ" ) ;
-
-		$user = null ;
+		$user = NULL ;
 		if( $user == NULL ) {
 			$userDAO = new UserDAOImpl() ;
 			$user = new User( $userName ) ;

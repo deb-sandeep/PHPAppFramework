@@ -23,6 +23,7 @@ class WebAuthenticationInterceptor extends Interceptor {
 	const REQ_PARAM_DEFAULT_APP = "default_app" ;
 
 	const REQ_TYPE_UNAUTHENTICATED = "REQ_TYPE_UNAUTHENTICATED" ;
+	const REQ_TYPE_UNAUTHORIZED    = "REQ_TYPE_UNAUTHORIZED" ;
 	const REQ_TYPE_PWD_AUTH        = "REQ_TYPE_PWD_AUTH" ;
 	const REQ_TYPE_TOKEN_AUTH      = "REQ_TYPE_TOKEN_AUTH" ;
 	const REQ_TYPE_LOGIN_PAGE_LOAD = "REQ_TYPE_LOGIN_PAGE_LOAD" ;
@@ -77,6 +78,11 @@ class WebAuthenticationInterceptor extends Interceptor {
 				$this->logger->debug( "Interception action - processing logout" ) ;
 				$this->processLogout() ;
 				break ;
+
+			case self::REQ_TYPE_UNAUTHORIZED:
+				$this->logger->debug( "Interception action - processing unauthorized page display" ) ;
+				$this->processUnauthorized() ;
+				break ;
 		}
 	}
 
@@ -95,6 +101,9 @@ class WebAuthenticationInterceptor extends Interceptor {
 		// logout trigger.
 		if( PHP_SELF == ServerContext::getLoginPage() ) {
 			return self::REQ_TYPE_LOGIN_PAGE_LOAD ;
+		}
+		else if( PHP_SELF == ServerContext::getUnauthRedirPage() ) {
+			return self::REQ_TYPE_UNAUTHORIZED ;
 		}
 		else if( PHP_SELF == LOGOUT_SERVICE ) {
 			return self::REQ_TYPE_LOGOUT ;
@@ -186,7 +195,19 @@ class WebAuthenticationInterceptor extends Interceptor {
 		}
 	}
 
+	private function processUnauthorized() {
+		$this->logOut() ;
+		// Do nothing else - the user will be shown the unauthorized page.
+	}
+
 	private function processLogout() {
+
+		$this->logOut() ;
+		$this->logger->debug( "Redirecting user to post logout page." ) ;
+		HTTPUtils::redirectTo( ServerContext::getLogoutPage() ) ;
+	}
+
+	private function logOut() {
 
 		$this->authToken = HTTPUtils::getCookieValue( 
 						  AuthenticationInterceptor::COOKIE_PARAM_AUTH_TOKEN ) ;
@@ -199,9 +220,6 @@ class WebAuthenticationInterceptor extends Interceptor {
 
 		$this->logger->debug( "Invalidating session." ) ;
 		HTTPUtils::invalidateSession() ;
-		
-		$this->logger->debug( "Redirecting user to post logout page." ) ;
-		HTTPUtils::redirectTo( ServerContext::getLogoutPage() ) ;
 	}
 
 	private function deleteAuthenticationTokenCookie() {

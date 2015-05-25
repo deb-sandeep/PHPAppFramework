@@ -5,9 +5,11 @@ class ServerContext {
 	const KEY_LANDING_PAGE = "landing_page" ;
 	const KEY_LOGOUT_PAGE  = "logout_page" ;
 	const KEY_LOGIN_PAGE   = "login_page" ;
+	const UNAUTH_REDIR_PAGE= "unauth_redir_page" ;
 
 	static $logger ;
 	static $defaultLandingPage = NULL ;
+	static $unauthRedirPage = NULL ;
 	static $logoutPage = NULL ;
 	static $loginPage  = NULL ;
 	static $appConfigs = NULL ;
@@ -27,6 +29,9 @@ class ServerContext {
 
 		self::$defaultLandingPage = Utils::getAttributeValue( self::$appConfigs,
 			                                self::KEY_LANDING_PAGE, true ) ;
+
+		self::$unauthRedirPage = Utils::getAttributeValue( self::$appConfigs,
+			                                self::UNAUTH_REDIR_PAGE, true ) ;
 
 		self::$logoutPage = Utils::getAttributeValue( self::$appConfigs,
 			                                self::KEY_LOGOUT_PAGE, true ) ;
@@ -64,6 +69,10 @@ class ServerContext {
 
 	static function getLoginPage() {
 		return self::$loginPage ;
+	}
+
+	static function getUnauthRedirPage() {
+		return self::$unauthRedirPage ;
 	}
 }
 

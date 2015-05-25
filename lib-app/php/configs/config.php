@@ -21,9 +21,10 @@ define( "NUM_HOURS_FOR_SESSION_AUTH_TOKEN_TO_BECOME_OBSOLETE", 1 ) ;
 
 $APP_CONFIG_DATA = <<< EOT
 {
-	"landing_page" : "/apps/_common/php/default_landing_page.php",
-	"login_page"   : "/apps/_common/php/login.php",
-	"logout_page"  : "/apps/_common/php/logout.php",
+	"landing_page"      : "/apps/_common/php/default_landing_page.php",
+	"login_page"        : "/apps/_common/php/login.php",
+	"logout_page"       : "/apps/_common/php/logout.php",
+	"unauth_redir_page" : "/apps/_common/php/unauth.php",
 
 	"test_app" : {
 		"landing_page" : "/apps/test_app/php/index.php"

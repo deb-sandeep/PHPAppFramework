@@ -94,8 +94,9 @@ class AuthorizationService {
 					return !$op->isForbidden() ;
 				}
 			}
-			throw new Exception( "Indifference rules for resource $resourceType " .
-				                 " is not configured in the system." ) ;
+			// If no operations are defined for indifferent case, we return 
+			// false - implying the user has not access.
+			return false ;
 		}
 		else if( $privilege == ent\AccessPrivilege::AP_CONFLICT ) {
 
