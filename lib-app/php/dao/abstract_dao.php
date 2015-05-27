@@ -113,7 +113,8 @@ abstract class AbstractDAO {
 	    return $retVal ;
 	}
 
-	protected function getResultAsAssociativeArray( $query, $colNames ) {
+	protected function getResultAsAssociativeArray( $query, $colNames, 
+		                                            $isolateSingleTupule=true ) {
 
 		$retVal = array() ;
 	    $result = $this->executeSelect( $query ) ;
@@ -125,11 +126,13 @@ abstract class AbstractDAO {
 	    	array_push( $retVal, $rowObj ) ;
 	    }
 
-	    if( count( $retVal ) == 0 ) {
-	    	return null ;
-	    }
-	    else if( count( $retVal ) == 1 ) {
-	    	return $retVal[0] ;
+	    if( $isolateSingleTupule ) {
+		    if( count( $retVal ) == 0 ) {
+		    	return null ;
+		    }
+		    else if( count( $retVal ) == 1 ) {
+		    	return $retVal[0] ;
+		    }
 	    }
 	    return $retVal ;
 	}
