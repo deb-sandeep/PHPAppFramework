@@ -35,10 +35,17 @@ abstract class AbstractDAO {
 	    }
 	}
 
+	/** 
+	 * Returns the last generated auto increment value or 0 if the last statement
+	 * did not result in an auto increment value.
+	 */
 	protected function executeInsert( $sql,
 		                              $minInsertedRecordsToCheck=1,
 		                              $successMessage="Insert successful" ) {
+		global $dbConn ;
 		$this->executeIUDStatement( $sql, "insert" ) ;
+		return $dbConn->insert_id ;
+
 	}
 
 	protected function executeUpdate( $sql, 
