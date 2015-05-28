@@ -97,7 +97,7 @@ class APIUtils {
 
 		$apiResponse = new APIResponse() ;
 		$apiResponse->responseCode = $responseCode ;
-		$apiResponse->requestBody = $message ;
+		$apiResponse->responseBody = $message ;
 
 		self::writeAPIResponse( $apiResponse ) ;
 	}
