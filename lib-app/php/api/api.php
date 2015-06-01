@@ -11,7 +11,7 @@ final class APIRequest {
 	public $appName               = NULL ;
 	public $resourceName          = NULL ;
 	public $requestPathComponents = NULL ;
-	public $parametersMap         = NULL ;
+	public $parametersMap         = [] ;
 	public $requestBody           = NULL ;
 }
 

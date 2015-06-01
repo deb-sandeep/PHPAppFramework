@@ -14,8 +14,8 @@ try {
 	$log->debug( "Successfully created API request." ) ;
 }
 catch( Exception $e ) {
-	$log->error( "Error creating APIRequest.", $e ) ;
-	APIUtils::writeAPIErrorResponse( APIResponse::SC_ERR_BAD_REQUEST, $e ) ;
+	$log->error( "Error creating APIRequest." . $e->getMessage() ) ;
+	APIUtils::writeAPIErrorResponse( APIResponse::SC_ERR_BAD_REQUEST, $e->getMessage() ) ;
 }
 
 try {
@@ -23,24 +23,24 @@ try {
 	$log->debug( "Successfully loaded API $apiRequest->resourceName" ) ;
 }
 catch( Exception $e ) {
-	$log->error( "Error loading API.", $e ) ;
-	APIUtils::writeAPIErrorResponse( APIResponse::SC_ERR_NOT_FOUND, $e ) ;	
+	$log->error( "Error loading API." . $e->getMessage() ) ;
+	APIUtils::writeAPIErrorResponse( APIResponse::SC_ERR_NOT_FOUND, $e->getMessage() ) ;	
 }
 
 try {
 	$apiResponse = $api->execute( $apiRequest ) ;
 }
 catch( Exception $e ) {
-	$log->error( "Error executing API.", $e ) ;
-	APIUtils::writeAPIErrorResponse( APIResponse::SC_ERR_INTERNAL_SERVER_ERROR, $e ) ;	
+	$log->error( "Error executing API." . $e->getMessage() ) ;
+	APIUtils::writeAPIErrorResponse( APIResponse::SC_ERR_INTERNAL_SERVER_ERROR, $e->getMessage() ) ;	
 }
 
 try {
 	APIUtils::writeAPIResponse( $apiResponse ) ;
 }
 catch( Exception $e ) {
-	$log->error( "Error writing API response.", $e ) ;
-	APIUtils::writeAPIErrorResponse( APIResponse::SC_ERR_INTERNAL_SERVER_ERROR, $e ) ;	
+	$log->error( "Error writing API response." . $e->getMessage() ) ;
+	APIUtils::writeAPIErrorResponse( APIResponse::SC_ERR_INTERNAL_SERVER_ERROR, $e->getMessage() ) ;	
 }
 
 ?>
