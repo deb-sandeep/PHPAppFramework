@@ -18,9 +18,11 @@
        <level value="warn" />
     </logger>
 
+    <!--
     <logger name="AbstractDAO" additivity="false">
-       <level value="warn" />
+       <level value="debug" />
     </logger>
+    -->
 
     <logger name="sandy\phpfw\entitlement\Entitlement" additivity="false">
        <level value="warn" />
