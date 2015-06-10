@@ -26,7 +26,7 @@ abstract class AbstractDAO {
 	            $this->logger->debug( "\t" . $successMessage . " Num affected rows = " . $dbConn->affected_rows ) ;
 	        }
 	        else {
-	        	$this->logger->debug( "WARNING:: " . $dbConn->affected_rows . 
+	        	$this->logger->warn( "WARNING:: " . $dbConn->affected_rows . 
 	        		            " rows affected. Less than expected." ) ;
 	        }
         }
