@@ -53,11 +53,11 @@ class UserDAOImpl extends AbstractDAO {
 
 		parent::executeUpdate( "update user.auth_token " .
 			                   "set last_access_time = NOW() " .
-			                   "where token = '$authToken'" ) ;
+			                   "where token = '$authToken'", 0 ) ;
 
 		parent::executeUpdate( "update user.user " .
 			                   "set last_access_time = NOW() " .
-			                   "where name = '$userName'" ) ;
+			                   "where name = '$userName'", 0 ) ;
 	}
 
 	function removeObsoleteTokens() {
@@ -72,7 +72,7 @@ class UserDAOImpl extends AbstractDAO {
 			"( token_type = 'REMEMBER_ME' and " .
 			   "timestampdiff( DAY, last_access_time, NOW() ) >= " . 
 			   NUM_DAYS_TO_REMEMBER_INACTIVE_USER . 
-			" )" 
+			" )", 0
 		) ;
 	}
 

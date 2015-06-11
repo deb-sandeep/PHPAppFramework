@@ -3,7 +3,7 @@
     <appender name="default" class="LoggerAppenderFile">
         <layout class="LoggerLayoutPattern">
            <param name="conversionPattern" 
-                  value="%-5level [%logger] %msg%n" /> 
+                  value="[%-5p] [%d{d:M:Y H:m:s}]  %-20c{1} - %m%n" /> 
         </layout>
         <param name="file" value="/var/log/php.log" />
         <param name="append" value="true" />

@@ -36,6 +36,11 @@ catch( Exception $e ) {
 }
 
 try {
+	if( $apiResponse->responseCode >= 400 ) {
+		$log->warn( "API call " . $apiRequest->appName . "::" . $apiRequest->resourceName .
+			        "failed with error code " . $apiResponse->responseCode ) ;
+		$log->warn( "   API body " . $apiResponse->responseBody ) ;
+	}
 	APIUtils::writeAPIResponse( $apiResponse ) ;
 }
 catch( Exception $e ) {

@@ -27,7 +27,9 @@ abstract class AbstractDAO {
 	        }
 	        else {
 	        	$this->logger->warn( "WARNING:: " . $dbConn->affected_rows . 
-	        		            " rows affected. Less than expected." ) ;
+	        		                 " rows affected. Less than expected. " .
+	        		                 "Expected $minAffectedRowsToCheck" ) ;
+	        	$this->logger->warn( "Query = $sql" ) ;
 	        }
         }
 	    else {
@@ -43,7 +45,9 @@ abstract class AbstractDAO {
 		                              $minInsertedRecordsToCheck=1,
 		                              $successMessage="Insert successful" ) {
 		global $dbConn ;
-		$this->executeIUDStatement( $sql, "insert" ) ;
+		$this->executeIUDStatement( $sql, "insert", 
+			                        $minInsertedRecordsToCheck,
+			                        $successMessage ) ;
 		return $dbConn->insert_id ;
 
 	}
@@ -51,13 +55,17 @@ abstract class AbstractDAO {
 	protected function executeUpdate( $sql, 
 		                              $minUpdatedRecordsToCheck=1, 
 		                              $successMessage="Update successful." ) {
-		$this->executeIUDStatement( $sql, "update" ) ;
+		$this->executeIUDStatement( $sql, "update", 
+			                        $minUpdatedRecordsToCheck,
+			                        $successMessage ) ;
 	}
 
 	protected function executeDelete( $sql, 
 		                              $minDeletedRecordsToCheck=1, 
 		                              $successMessage="Delete successful." ) {
-		$this->executeIUDStatement( $sql, "delete" ) ;
+		$this->executeIUDStatement( $sql, "delete",
+		                            $minDeletedRecordsToCheck,
+		                            $successMessage ) ;
 	}
 
 	public function executeSelect( $sql, 
