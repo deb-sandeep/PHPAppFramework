@@ -107,7 +107,7 @@ values ( '$userName', '$key', '$value' )
 on duplicate key update `value` = values ( `value` )
 QUERY;
 
-		parent::executeInsert( $query ) ;
+		parent::executeInsert( $query, 0 ) ;
 	}
 
 
