@@ -190,7 +190,7 @@
                         stateArray.splice($.inArray(nodeId, stateArray), 1);
                     }
                 }
-                $.cookie($this.treegrid('getSetting', 'saveStateName'), stateArray.join(','), { expires: 30 });
+                $.cookie($this.treegrid('getSetting', 'saveStateName'), stateArray.join(','), { expires: 30, path: '/' });
             }
             return $this;
         },
