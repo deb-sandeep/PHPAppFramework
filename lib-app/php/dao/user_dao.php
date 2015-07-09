@@ -101,15 +101,33 @@ QUERY;
 
 		$this->logger->debug( "Saving pref for $userName. [$key]=$value" ) ;
 
+        global $dbConn ;
+        $escapedKey = $dbConn->real_escape_string( $key ) ;
+        $escapedVal = $dbConn->real_escape_string( $value ) ;
+
 		$query = <<< QUERY
 insert into `user`.`user_preferences` (`user_name`, `key`, `value`) 
-values ( '$userName', '$key', '$value' ) 
+values ( '$userName', '$escapedKey', '$escapedVal' ) 
 on duplicate key update `value` = values ( `value` )
 QUERY;
 
 		parent::executeInsert( $query, 0 ) ;
 	}
 
+	function deleteUserPreference( $userName, $key ) {
+
+        global $dbConn ;
+        $escapedKey = $dbConn->real_escape_string( $key ) ;
+
+		$query = <<< QUERY
+delete from `user`.`user_preferences` 
+where 
+	`user_name` = '$userName' and 
+	`key` = '$escapedKey'
+QUERY;
+
+		parent::executeDelete( $query, 0 ) ;
+	}
 
 	function getUserRoles( $userName ) {
 

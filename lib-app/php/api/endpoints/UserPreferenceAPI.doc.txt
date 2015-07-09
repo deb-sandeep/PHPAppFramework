@@ -1,0 +1,133 @@
+                     Documentation for UserPreferenceAPI
+================================================================================
+Supported behavior
+
+1. Get all user preferences for the current user
+2. Get a particular value(s) for the specified keys
+3. Save/Update a set of preferences
+4. Delete a set of preferences
+
+* Notes
+  - Note that this endpoint is provided by the base framework and hence the
+    url should use __fw__ in place of application name
+
+  - This endpoint is accessible only in a valid user context. Else this will 
+    result in a 401.
+
+--------------------------------------------------------------------------------
+1. Get all user preferences for the current user
+
+* URL
+  /__fw__/api/UserPreference
+
+* Method:
+  GET
+
+* URL Params: none
+
+* Success Response Content:
+  {
+    'key1' : 'val1',
+    'key2' : 'val2',
+    'key3' : 'val3'
+  }
+
+  NOTE: an empty array is returned '[]' in case there are no preferences for 
+        the current user
+ 
+* Sample Call:
+
+$http.get( "/__fw__/api/UserPreference" )
+     .success( function( data ){
+        // ...
+      })
+     .error( function( data ){
+        // ...
+    });  
+
+--------------------------------------------------------------------------------
+2. Get a particular value(s) for the specified keys
+
+* URL
+  /__fw__/api/UserPreference?keys=k1,k2,k3
+
+* Method:
+  GET
+
+* URL Params: 
+  Required
+    keys=[comma separated list of keys]
+
+* Success Response Content
+  {
+    'k1' : 'v1',
+    'k2' : 'v2',
+    'k3' : 'v3'
+  }
+
+  NOTE: an empty array is returned '[]' in case there are no values associated
+        with the specified keys for the current user
+
+* Sample call:
+
+$http.get( "/__fw__/api/UserPreference?keys=k1,k2,k3" )
+     .success( function( data ){
+        // ...
+      })
+     .error( function( data ){
+        // ...
+    });  
+
+--------------------------------------------------------------------------------
+3. Save/Update a set of preferences
+
+* URL
+  /__fw__/api/UserPreference
+
+* Method:
+  PUT
+
+* Request body:
+  {
+    "key1" : "val1",
+    "key2" : "val2"
+  }
+
+* Success response:
+  { msg: "Update successful" }
+
+  $http.put( "/__fw__/api/UserPreference", {
+          'key1' : 'val1',
+          'key2' : 'val2'
+       } )
+       .success( function( data ){
+          // ...
+        })
+       .error( function( data ){
+          // ...
+      });  
+
+--------------------------------------------------------------------------------
+4. Delete a set of preferences
+
+* URL
+  /__fw__/api/UserPreference
+
+* Method:
+  DELETE
+
+* Request body:
+  { "keys" : "k1, k2, k3" }
+
+* Success response:
+  { msg: "Delete successful" }
+
+  $http.delete( "/__fw__/api/UserPreference", {
+          'keys' : 'k1,k2,k3'
+       } )
+       .success( function( data ){
+          // ...
+        })
+       .error( function( data ){
+          // ...
+      });  

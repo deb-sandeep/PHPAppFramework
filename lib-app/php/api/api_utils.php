@@ -110,7 +110,13 @@ class APIUtils {
 
 		self::$logger->debug( "Loading API $apiName for app $appName" ) ;
 
-		$apiDefinitionFile = DOCUMENT_ROOT . "/apps/$appName/php/api/$apiName" . "API.php" ;
+		if( $appName == "__fw__" ) {
+			$apiDefinitionFile = DOCUMENT_ROOT . "/lib-app/php/api/endpoints/$apiName" . "API.php" ;
+		}
+		else {
+			$apiDefinitionFile = DOCUMENT_ROOT . "/apps/$appName/php/api/$apiName" . "API.php" ;
+		}
+
 		self::$logger->debug( "Loading API definition file - $apiDefinitionFile" ) ;
 
 		if( file_exists( $apiDefinitionFile ) ) {

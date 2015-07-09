@@ -13,6 +13,13 @@ final class APIRequest {
 	public $requestPathComponents = NULL ;
 	public $parametersMap         = [] ;
 	public $requestBody           = NULL ;
+
+	function getParameter( $key, $defaultValue = NULL ) {
+		if( array_key_exists( $key, $this->parametersMap) ) {
+			return $this->parametersMap[ $key ] ;
+		}
+		return $defaultValue ;
+	}
 }
 
 final class APIResponse {
