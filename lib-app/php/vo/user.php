@@ -57,6 +57,14 @@ class User {
 
 	// --------------------- Setters -------------------------------------------
 	function setPreference( $key, $value ) {
+
+		if( $value === 'true' ) {
+			$value = true ;
+		}
+		else if( $value === 'false' ) {
+			$value = false ;
+		}
+
 		$this->preferences[ $key ] = $value ;
 	}
 

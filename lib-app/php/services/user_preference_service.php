@@ -73,12 +73,11 @@ class UserPreferenceService implements Service {
 		$user = $this->getCurrentUser() ;
 
 		foreach ( $map as $key => $value ) {
-	    	$this->logger->debug( "Setting preference $key = $value" ) ;
 	    	$user->setPreference( $key, $value ) ;
 		}
 	}
 
-	private function getCurrentUser() {
+	private function &getCurrentUser() {
 		$user = ExecutionContext::getCurrentUser() ;
 		if( $user == NULL ) {
 			throw new Exception( "No current user found." ) ;
