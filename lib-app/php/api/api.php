@@ -20,6 +20,14 @@ final class APIRequest {
 		}
 		return $defaultValue ;
 	}
+
+	function getPathComponent( $index ) {
+		if( $this->requestPathComponents != NULL &&
+		    sizeof( $this->requestPathComponents ) <= ( $index+1 ) ) {
+			return $this->requestPathComponents[ $index ] ;
+		}
+		return NULL ;
+	}
 }
 
 final class APIResponse {
