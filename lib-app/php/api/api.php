@@ -23,7 +23,7 @@ final class APIRequest {
 
 	function getPathComponent( $index ) {
 		if( $this->requestPathComponents != NULL &&
-		    sizeof( $this->requestPathComponents ) <= ( $index+1 ) ) {
+		    sizeof( $this->requestPathComponents ) > $index ) {
 			return $this->requestPathComponents[ $index ] ;
 		}
 		return NULL ;
