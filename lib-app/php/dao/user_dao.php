@@ -9,11 +9,8 @@ use sandy\phpfw\entitlement as ent ;
 
 class UserDAOImpl extends AbstractDAO {
 
-	private $logger ;
-
 	function __construct() {
 		parent::__construct() ;
-		$this->logger = Logger::getLogger( __CLASS__ ) ;
 	}
 
 	function getUserPassword( $userName ) {

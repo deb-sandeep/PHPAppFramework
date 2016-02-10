@@ -2,7 +2,7 @@
 
 abstract class AbstractDAO {
 
-	private $logger ;
+	protected $logger ;
 
 	function __construct() {
 		$this->logger = Logger::getLogger( __CLASS__ ) ;
