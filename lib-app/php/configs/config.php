@@ -32,6 +32,10 @@ $APP_CONFIG_DATA = <<< EOT
 
 	"jove_notes" : {
 		"landing_page" : "/apps/jove_notes/ng/dashboard/index.php"
+	},
+
+	"fin_mgr" : {
+		"landing_page" : "/apps/fin_mgr/ng/index.php"
 	}
 }
 EOT;
