@@ -1,3 +1,4 @@
 RewriteEngine On  
+Options -Indexes
 
 RewriteRule ^([^/]*)/?api/(.*)$ lib-app/php/api/api_gateway.php?_app_=$1&_path_=$2 [QSA,NC,L]
