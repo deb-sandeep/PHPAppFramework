@@ -48,29 +48,29 @@ class UserDAOImpl extends AbstractDAO {
 
 	function updateLastAccessTime( $userName, $authToken ) {
 
-		parent::executeUpdate( "update user.auth_token " .
-			                   "set last_access_time = NOW() " .
-			                   "where token = '$authToken'", 0 ) ;
+		// parent::executeUpdate( "update user.auth_token " .
+		// 	                   "set last_access_time = NOW() " .
+		// 	                   "where token = '$authToken'", 0 ) ;
 
-		parent::executeUpdate( "update user.user " .
-			                   "set last_access_time = NOW() " .
-			                   "where name = '$userName'", 0 ) ;
+		// parent::executeUpdate( "update user.user " .
+		// 	                   "set last_access_time = NOW() " .
+		// 	                   "where name = '$userName'", 0 ) ;
 	}
 
 	function removeObsoleteTokens() {
 
-		parent::executeDelete( 
-			"delete from user.auth_token " .
-			"where " .
-			"( token_type = 'SESSION' and " .
-			   "timestampdiff( HOUR, last_access_time, NOW() ) >= " . 
-			   NUM_HOURS_FOR_SESSION_AUTH_TOKEN_TO_BECOME_OBSOLETE .  
-			" ) or " .
-			"( token_type = 'REMEMBER_ME' and " .
-			   "timestampdiff( DAY, last_access_time, NOW() ) >= " . 
-			   NUM_DAYS_TO_REMEMBER_INACTIVE_USER . 
-			" )", 0
-		) ;
+		// parent::executeDelete( 
+		// 	"delete from user.auth_token " .
+		// 	"where " .
+		// 	"( token_type = 'SESSION' and " .
+		// 	   "timestampdiff( HOUR, last_access_time, NOW() ) >= " . 
+		// 	   NUM_HOURS_FOR_SESSION_AUTH_TOKEN_TO_BECOME_OBSOLETE .  
+		// 	" ) or " .
+		// 	"( token_type = 'REMEMBER_ME' and " .
+		// 	   "timestampdiff( DAY, last_access_time, NOW() ) >= " . 
+		// 	   NUM_DAYS_TO_REMEMBER_INACTIVE_USER . 
+		// 	" )", 0
+		// ) ;
 	}
 
 	/**
