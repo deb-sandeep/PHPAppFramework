@@ -273,7 +273,7 @@ class APIAuthenticationInterceptor extends AuthenticationInterceptor {
 			$this->userName = $this->authenticationService
 			                       ->validateAuthenticationToken( $this->authToken ) ;
 
-			$this->updateLastAccessTime() ;
+			//$this->updateLastAccessTime() ;
 			ExecutionContext::setCurrentUserName( $this->userName  ) ;
 			ExecutionContext::setUniqueKey( md5( $this->authToken ) ) ;
 		}
