@@ -63,10 +63,12 @@ class UserDAOImpl extends AbstractDAO {
 			"delete from user.auth_token " .
 			"where " .
 			"( token_type = 'SESSION' and " .
+			   "auto_expire = 1 and " .
 			   "timestampdiff( HOUR, last_access_time, NOW() ) >= " . 
 			   NUM_HOURS_FOR_SESSION_AUTH_TOKEN_TO_BECOME_OBSOLETE .  
 			" ) or " .
 			"( token_type = 'REMEMBER_ME' and " .
+			   "auto_expire = 1 and " .
 			   "timestampdiff( DAY, last_access_time, NOW() ) >= " . 
 			   NUM_DAYS_TO_REMEMBER_INACTIVE_USER . 
 			" )", 0
