@@ -389,7 +389,7 @@ function PivotTable() {
         }
     }
 
-    this.renderPivotTable = function( divName, caption, renderHelperCallback, expandAll ) {
+    this.renderPivotTable = function( divName, caption, renderHelperCallback, expandAll, showColumns ) {
 
         caption = typeof caption !== 'undefined' ? caption : "" ;
         renderHelperCallback = typeof renderHelperCallback !== 'undefined' ? renderHelperCallback : null ;
@@ -397,8 +397,8 @@ function PivotTable() {
         var tableId = divName + "_table" ;
         var renderString = "<table border='1' id='" + tableId + "'>" ;
         renderString += "<caption>" + caption + "</caption>" ;
-        renderString += getPivotTableHeaderRenderString( this.dataGrid, renderHelperCallback ) ;
-        renderString += getPivotTableBodyRenderString( this.dataGrid, this.parentRowIds, renderHelperCallback ) ;
+        renderString += getPivotTableHeaderRenderString( this.dataGrid, renderHelperCallback, showColumns ) ;
+        renderString += getPivotTableBodyRenderString( this.dataGrid, this.parentRowIds, renderHelperCallback, showColumns ) ;
         renderString += "</table>" ;
 
         document.getElementById( divName ).innerHTML = renderString ;
@@ -423,20 +423,24 @@ function PivotTable() {
         }
     }
 
-    var getPivotTableHeaderRenderString = function( grid, renderHelperCallback ) {
+    var getPivotTableHeaderRenderString = function( grid, renderHelperCallback, showColumns ) {
 
         var renderString = "<thead>" ;
-        renderString += getPivotTableHeaderRowRenderString( 0, grid, "<th>", "</th>", renderHelperCallback ) ;
-        renderString += getPivotTableHeaderRowRenderString( 1, grid, "<td>", "</td>", renderHelperCallback ) ;
+        renderString += getPivotTableHeaderRowRenderString( 0, grid, "<th>", "</th>", renderHelperCallback, showColumns ) ;
+        renderString += getPivotTableHeaderRowRenderString( 1, grid, "<td>", "</td>", renderHelperCallback, showColumns ) ;
         renderString += "</thead>" ;
         return renderString ;
     }
 
-    var getPivotTableHeaderRowRenderString = function( rowIndex, grid, startTag, endTag, renderHelperCallback ) {
+    var getPivotTableHeaderRowRenderString = function( rowIndex, grid, startTag, endTag, renderHelperCallback, showColumns ) {
         
         var gridRow = grid[rowIndex] ;
         var renderString = "<tr>" ;
         for( var colIndex=0; colIndex<gridRow.length; colIndex++ ) {
+
+            if( colIndex > 0 && colIndex < gridRow.length-1 && !showColumns ) {
+                continue ;
+            }
 
             var cellData = gridRow[ colIndex ] ;
             if( renderHelperCallback != null ) {
@@ -451,7 +455,7 @@ function PivotTable() {
         return renderString ;
     }
 
-    var getPivotTableBodyRenderString = function( grid, parentRowIds, renderHelperCallback ) {
+    var getPivotTableBodyRenderString = function( grid, parentRowIds, renderHelperCallback, showColumns ) {
 
         var renderString = "<tbody>" ;
         for( var rowIndex=2; rowIndex<grid.length; rowIndex++ ) {
@@ -460,13 +464,14 @@ function PivotTable() {
                                                     grid, 
                                                     rowIndex, 
                                                     parentRowIds[rowIndex],
-                                                    renderHelperCallback ) ;
+                                                    renderHelperCallback,
+                                                    showColumns ) ;
         }
         renderString += "</tbody>" ;
         return renderString ;
     }
 
-    var getPivotTableBodyRowRenderString = function( rowIndex, grid, rowNum, parentRowNum, renderHelperCallback ) {
+    var getPivotTableBodyRowRenderString = function( rowIndex, grid, rowNum, parentRowNum, renderHelperCallback, showColumns ) {
 
         var gridRow = grid[rowIndex] ;
         var attrList = "data-tt-id='" + rowNum + "'" ;
@@ -476,6 +481,10 @@ function PivotTable() {
 
         var renderString = "<tr " + attrList + ">" ;
         for( var colIndex=0; colIndex<gridRow.length; colIndex++ ) {
+
+            if( colIndex > 0 && colIndex < gridRow.length-1 && !showColumns ) {
+                continue ;
+            }
 
             var cellData = gridRow[ colIndex ] ;
             if( renderHelperCallback != null ) {
