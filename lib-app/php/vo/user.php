@@ -11,8 +11,6 @@ class User {
 
 	const AUTH_RES_TYPE_ROLE = "ROLE" ;
 
-	private $logger ;
-
 	private $userName     = NULL ;
 	private $preferences  = NULL ;
 	private $entitlement  = NULL ;
@@ -20,8 +18,6 @@ class User {
 
 	function __construct( $name ) {
 
-		$this->logger = Logger::getLogger( __CLASS__ ) ;
-		
 		$this->userName    = $name ;
 		$this->preferences = array() ;
 		$this->roles       = array() ;

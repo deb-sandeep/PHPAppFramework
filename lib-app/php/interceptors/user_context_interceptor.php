@@ -18,28 +18,20 @@ class UserContextInterceptor extends Interceptor {
 	function intercept() {
 
 		$userName = ExecutionContext::getCurrentUserName() ;
-		$user = Cache::getUserObject( "USER_OBJ" ) ;
-		if( $user == NULL ) {
-			$userDAO = new UserDAOImpl() ;
-			$user = new User( $userName ) ;
+		$userDAO = new UserDAOImpl() ;
+		$user = new User( $userName ) ;
 
-			$map = $userDAO->loadUserPreferences( $userName ) ;
-			foreach ($map as $key => $value) {
-		    	$this->logger->debug( "Setting preference $key = $value" ) ;
-		    	$user->setPreference( $key, $value ) ;
-			}
-
-			$roles = $userDAO->getUserRoles( $userName )	;
-			$user->addRoles( $roles ) ;
-
-			$ent = $userDAO->getEntitlementsForUser( $userName ) ;
-			$user->setEntitlement( $ent ) ;
-
-			Cache::setUserObject( "USER_OBJ", $user ) ;
+		$map = $userDAO->loadUserPreferences( $userName ) ;
+		foreach ($map as $key => $value) {
+	    	$this->logger->debug( "Setting preference $key = $value" ) ;
+	    	$user->setPreference( $key, $value ) ;
 		}
-		else {
-			$this->logger->debug( "Got user object from cache" ) ;
-		}
+
+		$roles = $userDAO->getUserRoles( $userName )	;
+		$user->addRoles( $roles ) ;
+
+		$ent = $userDAO->getEntitlementsForUser( $userName ) ;
+		$user->setEntitlement( $ent ) ;
 		
 		ExecutionContext::setCurrentUser( $user ) ;
 	}	

@@ -10,7 +10,7 @@
     </appender>
 
     <root>
-        <level value="warn" />
+        <level value="debug" />
         <appender_ref ref="default" />
     </root>
 
