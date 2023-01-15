@@ -122,6 +122,7 @@ class APIUtils {
 		if( file_exists( $apiDefinitionFile ) ) {
 			self::$logger->debug( "API found" ) ;
 			include_once( $apiDefinitionFile ) ;
+			self::$logger->debug( "API file loaded" ) ;
 			$className = $apiName . "API" ;
 			$api = new $className() ;
 			if( !($api instanceof API) ) {
