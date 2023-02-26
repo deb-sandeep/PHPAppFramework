@@ -22,15 +22,8 @@ abstract class AbstractDAO {
 
 	    $this->logger->debug( "Firing $sqlType query = $sql" ) ;
 	    if( $result = $dbConn->query( $sql ) ) {
-	        if( $dbConn->affected_rows >= $minAffectedRowsToCheck ) {
-	            $this->logger->debug( "\t" . $successMessage . " Num affected rows = " . $dbConn->affected_rows ) ;
-	        }
-	        else {
-	        	$this->logger->warn( "WARNING:: " . $dbConn->affected_rows . 
-	        		                 " rows affected. Less than expected. " .
-	        		                 "Expected $minAffectedRowsToCheck" ) ;
-	        	$this->logger->warn( "Query = $sql" ) ;
-	        }
+            $this->logger->debug( "\t" . $successMessage .
+                                  " Num affected rows = " . $dbConn->affected_rows ) ;
         }
 	    else {
 			$this->processDatabaseError( $sql ) ;

@@ -10,21 +10,33 @@
     </appender>
 
     <root>
-        <level value="warn" />
+        <level value="INFO" />
         <appender_ref ref="default" />
     </root>
 
-    <logger name="StringUtils" additivity="false">
-       <level value="warn" />
+    <logger name="StringUtils">
+        <level value="WARN"/>
+        <appender_ref ref="default"/>
     </logger>
 
-    <!--
-    <logger name="AbstractDAO" additivity="false">
-       <level value="debug" />
+    <logger name="AbstractDAO">
+        <level value="WARN"/>
+        <appender_ref ref="default"/>
     </logger>
-    -->
 
-    <logger name="sandy\phpfw\entitlement\Entitlement" additivity="false">
-       <level value="warn" />
+    <logger name="ExerciseQuestionAPI">
+        <level value="DEBUG"/>
+        <appender_ref ref="default"/>
     </logger>
+
+    <logger name="ExerciseAPI">
+        <level value="DEBUG"/>
+        <appender_ref ref="default"/>
+    </logger>
+
+    <logger name="sandy\phpfw\entitlement\Entitlement">
+        <level value="WARN"/>
+        <appender_ref ref="default"/>
+    </logger>
+
 </configuration>
