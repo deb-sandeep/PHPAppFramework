@@ -25,12 +25,17 @@
     </logger>
 
     <logger name="ExerciseQuestionAPI">
-        <level value="DEBUG"/>
+        <level value="WARN"/>
         <appender_ref ref="default"/>
     </logger>
 
     <logger name="ExerciseAPI">
-        <level value="DEBUG"/>
+        <level value="WARN"/>
+        <appender_ref ref="default"/>
+    </logger>
+
+    <logger name="ExerciseEventAPI">
+        <level value="WARN"/>
         <appender_ref ref="default"/>
     </logger>
 
