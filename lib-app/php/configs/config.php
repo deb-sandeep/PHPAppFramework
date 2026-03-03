@@ -1,7 +1,7 @@
 <?php
 // Error reporting management
 ini_set( 'display_errors', 'On' ) ;
-error_reporting( E_ALL | E_STRICT ) ;
+error_reporting( E_ALL ) ;
 
 define( "PHP_SELF",             $_SERVER['PHP_SELF'] ) ;
 define( "DOCUMENT_ROOT",        $_SERVER['DOCUMENT_ROOT'] ) ;
