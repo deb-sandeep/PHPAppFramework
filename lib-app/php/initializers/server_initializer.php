@@ -2,8 +2,6 @@
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/initializers/" . "initializer.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/utils/" .        "server_context.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/utils/" .        "cache.php" ) ;
-
 class ServerInitializer extends Initializer {
 
 	private $logger ;
@@ -15,7 +13,6 @@ class ServerInitializer extends Initializer {
 
 	function initialize() {
 		ServerContext::setAppConfigs( $GLOBALS[ 'APP_CONFIG_DATA' ] ) ;
-		Cache::initialize() ;
 		$this->logger->debug( "Server initialized." ) ;
 	}
 }

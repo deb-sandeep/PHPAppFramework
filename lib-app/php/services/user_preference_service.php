@@ -10,7 +10,6 @@
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/services/service.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/dao/user_dao.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/utils/cache.php" ) ;
 
 class UserPreferenceService implements Service {
 
@@ -36,13 +35,13 @@ class UserPreferenceService implements Service {
 		foreach( $keyValueAssocArray as $key => $value) {
 			$this->userDAO->saveUserPreference( $curUserName, $key, $value ) ;
 		}
-		$this->refreshInMemoryCopy() ;
+		$this->reloadUserPreferencesFromDB() ;
 	}
 
 	function saveUserPreference( $key, $value ) {
 		$this->userDAO->saveUserPreference( ExecutionContext::getCurrentUserName(), 
 			                                $key, $value ) ;
-		$this->refreshInMemoryCopy() ;
+		$this->reloadUserPreferencesFromDB() ;
 	}
 
 	function deleteUserPreferences( $keyArray ) {
@@ -50,21 +49,14 @@ class UserPreferenceService implements Service {
 		$curUserName = ExecutionContext::getCurrentUserName() ;
 		foreach( $keyArray as $key ) {
 			$this->userDAO->deleteUserPreference( $curUserName, $key ) ;
-		}		
-		
-		$this->refreshInMemoryCopy() ;
+		}
+		$this->reloadUserPreferencesFromDB() ;
 	}
 
 	function deleteUserPreference( $key ) {
 		$this->userDAO->deleteUserPreference( ExecutionContext::getCurrentUserName(),
 			                                  $key ) ;
-		$this->refreshInMemoryCopy() ;
-	}
-
-	private function refreshInMemoryCopy() {
-
 		$this->reloadUserPreferencesFromDB() ;
-		Cache::setUserObject( "USER_OBJ", ExecutionContext::getCurrentUser() ) ;
 	}
 
 	private function reloadUserPreferencesFromDB() {

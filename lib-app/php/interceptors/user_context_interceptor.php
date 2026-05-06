@@ -4,7 +4,6 @@ require_once( DOCUMENT_ROOT . "/lib-app/php/dao/user_dao.php" ) ;
 require_once( DOCUMENT_ROOT . "/lib-app/php/vo/user.php" ) ;
 
 require_once( DOCUMENT_ROOT . "/lib-app/php/interceptors/interceptor.php" ) ;
-require_once( DOCUMENT_ROOT . "/lib-app/php/utils/cache.php" ) ;
 
 class UserContextInterceptor extends Interceptor {
 
