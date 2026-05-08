@@ -74,44 +74,46 @@ class AuthorizationService {
 	}
 
 	function hasAccess( $user, $guard, $opName ) {
+	  // NOTE: Relaxing the authorization for the JEE lap.
+	  return true ;
 
-		$guardComponents = explode( ":", $guard ) ;
-		if( count( $guardComponents ) != 2 ) {
-			throw new AuthorizationException( "Guard $guard - wrong format." ) ;
-		}
-		$resType = trim( $guardComponents[0] ) ;
-		$path    = trim( $guardComponents[1] ) ;
-
-		$entitlement      = $user->getEntitlement() ;
-		$accessPrivileges = $entitlement->computeAccessPrivilege( $resType, $path ) ;
-		$privilege        = $accessPrivileges->getAccessPrivilege( $opName ) ;	
-
-		if( $privilege == ent\AccessPrivilege::AP_INDEFINITE ) {
-
-			$defaultRules = $this->defaultEnitlementRules[ $resType ] ;
-			foreach( $defaultRules->indifferenceOps as $op ) {
-				if( $op->getOpName() == $opName ) {
-					return !$op->isForbidden() ;
-				}
-			}
-			// If no operations are defined for indifferent case, we return 
-			// false - implying the user has not access.
-			return false ;
-		}
-		else if( $privilege == ent\AccessPrivilege::AP_CONFLICT ) {
-
-			$defaultRules = $this->defaultEnitlementRules[ $resType ] ;
-			return $defaultRules->conflictStrategy == "allow" ;
-		}
-		else if( $privilege == ent\AccessPrivilege::AP_ACCESS ) {
-
-			return true ;
-		}
-		else if( $privilege == ent\AccessPrivilege::AP_FORBID ) {
-
-			return false ;
-		}
-	}
+// 		$guardComponents = explode( ":", $guard ) ;
+// 		if( count( $guardComponents ) != 2 ) {
+// 			throw new AuthorizationException( "Guard $guard - wrong format." ) ;
+// 		}
+// 		$resType = trim( $guardComponents[0] ) ;
+// 		$path    = trim( $guardComponents[1] ) ;
+//
+// 		$entitlement      = $user->getEntitlement() ;
+// 		$accessPrivileges = $entitlement->computeAccessPrivilege( $resType, $path ) ;
+// 		$privilege        = $accessPrivileges->getAccessPrivilege( $opName ) ;
+//
+// 		if( $privilege == ent\AccessPrivilege::AP_INDEFINITE ) {
+//
+// 			$defaultRules = $this->defaultEnitlementRules[ $resType ] ;
+// 			foreach( $defaultRules->indifferenceOps as $op ) {
+// 				if( $op->getOpName() == $opName ) {
+// 					return !$op->isForbidden() ;
+// 				}
+// 			}
+// 			// If no operations are defined for indifferent case, we return
+// 			// false - implying the user has not access.
+// 			return false ;
+// 		}
+// 		else if( $privilege == ent\AccessPrivilege::AP_CONFLICT ) {
+//
+// 			$defaultRules = $this->defaultEnitlementRules[ $resType ] ;
+// 			return $defaultRules->conflictStrategy == "allow" ;
+// 		}
+// 		else if( $privilege == ent\AccessPrivilege::AP_ACCESS ) {
+//
+// 			return true ;
+// 		}
+// 		else if( $privilege == ent\AccessPrivilege::AP_FORBID ) {
+//
+// 			return false ;
+// 		}
+ 	}
 }
 
 class Authorizer {
