@@ -13,6 +13,8 @@ define( "DB_USER",              getenv( "DB_USER" ) ?: "root" ) ;
 define( "DB_PASSWORD",          getenv( "DB_PASSWORD") ) ;
 define( "DB_SCHEMA",            "" ) ;
 
+define( "SCONSOLE_BASE_URL",    getenv( "SCONSOLE_BASE_URL" ) ?: "" ) ;
+
 define( "ERROR_PAGE_INCLUDE_PATH", DOCUMENT_ROOT . "/lib-app/php/web/default_error_page.php" ) ;
 
 define( "NUM_DAYS_TO_REMEMBER_USER", 30 ) ;
