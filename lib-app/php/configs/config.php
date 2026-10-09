@@ -15,6 +15,10 @@ define( "DB_SCHEMA",            "" ) ;
 
 define( "SCONSOLE_BASE_URL",    getenv( "SCONSOLE_BASE_URL" ) ?: "" ) ;
 
+// If set, unauthenticated web requests are silently logged in as this user
+// instead of being shown the login page. Meant for single user deployments.
+define( "AUTO_LOGIN_USER",      getenv( "AUTO_LOGIN_USER" ) ?: "" ) ;
+
 define( "ERROR_PAGE_INCLUDE_PATH", DOCUMENT_ROOT . "/lib-app/php/web/default_error_page.php" ) ;
 
 define( "NUM_DAYS_TO_REMEMBER_USER", 30 ) ;

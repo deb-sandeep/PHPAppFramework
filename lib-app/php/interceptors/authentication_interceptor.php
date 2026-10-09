@@ -54,10 +54,21 @@ class WebAuthenticationInterceptor extends Interceptor {
 		switch( $requestType ) {
 
 			case self::REQ_TYPE_LOGIN_PAGE_LOAD:
+				if( $this->isAutoLoginEnabled() ) {
+					$this->logger->debug( "Interception action - Auto login, skipping login page" ) ;
+					$this->processAutoLogin() ;
+					HTTPUtils::redirectTo( "/" ) ;
+				}
 				$this->logger->debug( "Interception action - Pass throught" ) ;
 				break ;
 
 			case self::REQ_TYPE_UNAUTHENTICATED:
+				if( $this->isAutoLoginEnabled() ) {
+					$this->logger->debug( "Interception action - Auto login" ) ;
+					$this->processAutoLogin() ;
+					$this->updateLastAccessTime() ;
+					break ;
+				}
 				$this->logger->debug( "Interception action - Redirecting to login page" ) ;
 				$this->processUnauthenticatedRequest() ;
 				break ;
@@ -188,11 +199,35 @@ class WebAuthenticationInterceptor extends Interceptor {
 		catch( AuthenticationException $e ) {
 
 			$this->logger->error( "Invalid token. Message = " . $e ) ;
+			if( $this->isAutoLoginEnabled() ) {
+				$this->processAutoLogin() ;
+				return ;
+			}
 			$this->setErrorMessageInSession( $e ) ;
 		    $this->saveRequestedPageDetailsInSession() ;
 		    $this->deleteAuthenticationTokenCookie() ;
 			HTTPUtils::redirectTo( ServerContext::getLoginPage() ) ;
 		}
+	}
+
+	private function isAutoLoginEnabled() {
+		return AUTO_LOGIN_USER != "" ;
+	}
+
+	// Logs in AUTO_LOGIN_USER without credentials by issuing a fresh
+	// REMEMBER_ME token, exactly as a successful password login would.
+	private function processAutoLogin() {
+
+		$this->userName  = AUTO_LOGIN_USER ;
+		$this->authToken = $this->authenticationService
+		                        ->getNewAuthenticationTokenForUser
+		                          ( $this->userName, "REMEMBER_ME" ) ;
+
+		$this->logger->debug( "Auto login as '$this->userName'" ) ;
+		HTTPUtils::setCookie( AuthenticationInterceptor::COOKIE_PARAM_AUTH_TOKEN,
+			                  $this->authToken, NUM_DAYS_TO_REMEMBER_USER ) ;
+		ExecutionContext::setCurrentUserName( $this->userName  ) ;
+		ExecutionContext::setUniqueKey( md5( $this->authToken ) ) ;
 	}
 
 	private function processUnauthorized() {
