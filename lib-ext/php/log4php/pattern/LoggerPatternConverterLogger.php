@@ -40,7 +40,7 @@ class LoggerPatternConverterLogger extends LoggerPatternConverter {
 	public function activateOptions() {
 		// Parse the option (desired output length)
 		if (isset($this->option) && is_numeric($this->option) && $this->option >= 0) {
-			$this->length = (integer) $this->option;
+			$this->length = (int) $this->option;
 		}
 	}
 	

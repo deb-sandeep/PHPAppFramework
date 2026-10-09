@@ -221,13 +221,13 @@ class LoggerPatternParser {
 		$parts = explode('.', $modifiers);
 	
 		if (!empty($parts[0])) {
-			$minPart = (integer) $parts[0];
+			$minPart = (int) $parts[0];
 			$info->min = abs($minPart);
 			$info->padLeft = ($minPart > 0);
 		}
 	
 		if (!empty($parts[1])) {
-			$maxPart = (integer) $parts[1];
+			$maxPart = (int) $parts[1];
 			$info->max = abs($maxPart);
 			$info->trimLeft = ($maxPart < 0);
 		}

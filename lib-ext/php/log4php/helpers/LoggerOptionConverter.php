@@ -91,8 +91,8 @@ class LoggerOptionConverter {
 		if (is_integer($value)) {
 			return $value;
 		}
-		if (is_numeric($value) && ($value == (integer) $value)) {
-			return (integer) $value;
+		if (is_numeric($value) && ($value == (int) $value)) {
+			return (int) $value;
 		}
 	
 		throw new LoggerException("Given value [" . var_export($value, true) . "] cannot be converted to integer.");
@@ -106,8 +106,8 @@ class LoggerOptionConverter {
 		if (is_integer($value) && $value > 0) {
 			return $value;
 		}
-		if (is_numeric($value) && ($value == (integer) $value) && $value > 0) {
-			return (integer) $value;
+		if (is_numeric($value) && ($value == (int) $value) && $value > 0) {
+			return (int) $value;
 		}
 	
 		throw new LoggerException("Given value [" . var_export($value, true) . "] cannot be converted to a positive integer.");
@@ -126,7 +126,7 @@ class LoggerOptionConverter {
 	}
 
 	/**
-	 * Converts a value to a valid file size (integer).
+	 * Converts a value to a valid file size (int).
 	 * 
 	 * Supports 'KB', 'MB' and 'GB' suffixes, where KB = 1024 B etc. 
 	 *
@@ -148,7 +148,7 @@ class LoggerOptionConverter {
 		}
 		
 		if (is_numeric($value)) {
-			return (integer) $value;
+			return (int) $value;
 		}
 		
 		if (!is_string($value)) {
@@ -168,7 +168,7 @@ class LoggerOptionConverter {
 				case 'GB': $size *= pow(1024, 3); break;
 			}
 			
-			return (integer) $size;
+			return (int) $size;
 		}
 		
 		throw new LoggerException("Given value [$value] cannot be converted to a file size.");
